@@ -24,24 +24,34 @@ class _RegistroPageState extends State<RegistroPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Container(
+                width: 200, // Ancho deseado
+                height: 200, // Alto deseado
+                padding: EdgeInsets.all(30),
+                child: Image.asset('assets/images/image.png'),
+              ),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Nombre Completo',
+                  hintStyle: TextStyle(color: Colors.black54)
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Correo',
+                  hintStyle: TextStyle(color: Colors.black54)
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Contraseña',
+                  hintStyle: TextStyle(color: Colors.black54)
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Repetir Contraseña',
+                  hintStyle: TextStyle(color: Colors.black54)
                 ),
               ),
               SizedBox(height: 20),

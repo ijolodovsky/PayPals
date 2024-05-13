@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_gastos/screens/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -20,14 +21,22 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Container(
+                width: 200, // Ancho deseado
+                height: 200, // Alto deseado
+                padding: EdgeInsets.all(30),
+                child: Image.asset('assets/images/image.png'),
+              ),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Correo',
+                  hintStyle: TextStyle(color: Colors.black54),
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Contraseña',
+                  hintStyle: TextStyle(color: Colors.black54)
                 ),
               ),
               SizedBox(height: 20),
@@ -35,6 +44,11 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text('Ingresar'),
                 onPressed: () {
                   // Implementar la lógica de inicio de sesión con Firebase
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
               ),
               SizedBox(height: 20),

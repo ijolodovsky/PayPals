@@ -1,26 +1,30 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/screens/registro.dart';
 import 'package:flutter_app_gastos/screens/login.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
 
-void main() async {
-
+void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'App de gastos',
+        title: 'payPals',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0x28D6F9)),
+          buttonTheme: ButtonThemeData(
+            buttonColor: const Color.fromARGB(255, 39, 125, 129),
+            textTheme: ButtonTextTheme.primary,
+          ),
+          fontFamily: GoogleFonts.montserrat().fontFamily,
+          scaffoldBackgroundColor: const Color(0xFFFDFD),
         ),
         home: MyHomePage(),
       ),
@@ -29,7 +33,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  String _title = 'App de gastos';
+  String _title = 'payPals';
   String get title => _title;
 
   void changeTitle(String newTitle) {
@@ -43,33 +47,37 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('App de gastos'),
+        title: Text('payPals'),
+        centerTitle: true,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                // ruta a la pantalla de inicio de sesión
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              },
-              child: Text('Iniciar sesión'),
+            Container(
+              width: 200,
+              height: 200,
+              padding: const EdgeInsets.all(30),
+              child: Image.asset('assets/images/image.png'),
             ),
-            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // ruta a la pantalla de registro
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => RegistroPage()),
                 );
               },
               child: Text('Registro'),
-
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+              child: Text('Iniciar sesión'),
             ),
           ],
         ),
