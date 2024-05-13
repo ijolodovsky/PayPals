@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "991144222743",
+    "project_id": "flutter-app-gastos",
+    "storage_bucket": "flutter-app-gastos.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991144222743:android:42205eccf780026e6b3c52",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app_gastos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3GbTA_36CGNMrmT5_1-ZIU4pA0ApvP1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
