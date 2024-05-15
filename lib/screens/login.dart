@@ -44,10 +44,10 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text('Ingresar'),
                 onPressed: () {
                   // Implementar la lógica de inicio de sesión con Firebase
-
+                  String userName = "Iara Jolo";
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                    MaterialPageRoute(builder: (context) => HomeScreen(userName: userName)),
                   );
                 },
               ),
