@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_gastos/screens/add_group.dart';
-import 'package:flutter_app_gastos/screens/group.dart';
+import 'package:flutter_app_gastos/screens/add_expense.dart';
 
-class HomeScreen extends StatelessWidget {
-  final String userName; // Nombre del usuario (debes proporcionarlo)
+class GroupScreen extends StatelessWidget {
+  final String groupName; // Nombre del grupo de gastos
 
-  HomeScreen({required this.userName});
+  GroupScreen({required this.groupName});
 
   @override
   Widget build(BuildContext context) {
@@ -22,35 +21,24 @@ class HomeScreen extends StatelessWidget {
               radius: 40,
               backgroundColor: Colors.blue, // Puedes cambiar el color
               child: Text(
-                userName.substring(0, 1).toUpperCase(),
+                groupName.substring(0, 1).toUpperCase(),
                 style: TextStyle(fontSize: 24, color: Colors.white),
               ),
             ),
             SizedBox(height: 10),
             // Nombre del usuario
             Text(
-              '¡Bienvenido, $userName!',
+              groupName,
               style: TextStyle(fontSize: 24),
             ),
             SizedBox(height: 30),
             // Listado de grupos de gastos
             Text(
-              'Tus Grupos de Gastos:',
+              'Lista de Gastos:',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 10),
             // Lista de grupos de gastos (puedes usar ListView.builder)
-            GroupButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GroupScreen(groupName: 'bajitos',)),
-                );
-              },
-              groupName: 'Grupo 1',
-              amount: 150.0, 
-              isDebt: true, 
-            ),
             SizedBox(height: 10),
             GroupButton(
               onPressed: () {
@@ -68,7 +56,7 @@ class HomeScreen extends StatelessWidget {
           // Acción al presionar el botón de agregar nuevo grupo de gastos
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddGroupPage()),
+            MaterialPageRoute(builder: (context) => AddExpense()),
           );
         },
         child: Icon(Icons.add),
