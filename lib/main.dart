@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/screens/registro.dart';
 import 'package:flutter_app_gastos/screens/login.dart';
+import 'package:flutter_app_gastos/screens/home_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: "AIzaSyBliv3875udBp2EARP3CTs0iR2t4eIZSU8",
+      authDomain: "flutter-app-gastos.firebaseapp.com",
+      projectId: "flutter-app-gastos",
+      storageBucket: "flutter-app-gastos.appspot.com",
+      messagingSenderId: "991144222743",
+      appId: "1:991144222743:web:42594cfc7086965f6b3c52",
+      measurementId: "G-7DBWEPP817"
+
+    ),
+  );
   runApp(MyApp());
 }
 
