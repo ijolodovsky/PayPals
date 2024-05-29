@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '991144222743',
     projectId: 'flutter-app-gastos',
     storageBucket: 'flutter-app-gastos.appspot.com',
+    iosClientId: '991144222743-bh3jma36lsn6fjj5akn26732p57768jo.apps.googleusercontent.com',
     iosBundleId: 'com.example.flutterAppGastos',
   );
 
@@ -73,6 +74,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '991144222743',
     projectId: 'flutter-app-gastos',
     storageBucket: 'flutter-app-gastos.appspot.com',
+    iosClientId: '991144222743-bh3jma36lsn6fjj5akn26732p57768jo.apps.googleusercontent.com',
     iosBundleId: 'com.example.flutterAppGastos',
   );
 
@@ -85,4 +87,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'flutter-app-gastos.appspot.com',
     measurementId: 'G-KR2T5L77QV',
   );
+
 }
