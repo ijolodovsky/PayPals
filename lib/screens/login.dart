@@ -4,8 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../user_auth/firebase_user_authentication/fire_auth_services.dart';
 
 class LoginPage extends StatefulWidget {
- @override
- _LoginPageState createState() => _LoginPageState();
+  @override
+  _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -61,9 +61,7 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 child: Text('Olvidé mi contraseña'),
-                onPressed: () {
-                  // Implementar la lógica para recuperar la contraseña
-                },
+                onPressed: _showPasswordResetDialog,
               ),
             ],
           ),
@@ -96,5 +94,50 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(content: Text('Error inesperado: $e')),
       );
     }
+  }
+
+  void _showPasswordResetDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final TextEditingController _resetEmailController = TextEditingController();
+
+        return AlertDialog(
+          title: Text('Restablecer contraseña'),
+          content: TextField(
+            controller: _resetEmailController,
+            decoration: InputDecoration(
+              hintText: 'Ingrese su correo electrónico',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Enviar'),
+              onPressed: () async {
+                String resetEmail = _resetEmailController.text;
+
+                try {
+                  await _authService.sendPasswordResetEmail(resetEmail);
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Correo de restablecimiento enviado')),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al enviar el correo de restablecimiento: $e')),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
