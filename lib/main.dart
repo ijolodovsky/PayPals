@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_gastos/screens/registro.dart';
-import 'package:flutter_app_gastos/screens/login.dart';
-import 'package:flutter_app_gastos/screens/home_page.dart';
+import 'package:flutter_app_gastos/screens/initial_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: FirebaseOptions(
@@ -18,7 +15,6 @@ void main() async{
       messagingSenderId: "991144222743",
       appId: "1:991144222743:web:42594cfc7086965f6b3c52",
       measurementId: "G-7DBWEPP817"
-
     ),
   );
   runApp(MyApp());
@@ -55,49 +51,5 @@ class MyAppState extends ChangeNotifier {
   void changeTitle(String newTitle) {
     _title = newTitle;
     notifyListeners();
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('payPals'),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              width: 200,
-              height: 200,
-              padding: const EdgeInsets.all(30),
-              child: Image.asset('assets/images/image.png'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegistroPage()),
-                );
-              },
-              child: Text('Registro'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              },
-              child: Text('Iniciar sesión'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

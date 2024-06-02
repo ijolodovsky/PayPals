@@ -1,17 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/screens/add_group.dart';
 import 'package:flutter_app_gastos/screens/group.dart';
+import 'package:flutter_app_gastos/screens/initial_page.dart'; // Importa el archivo donde se encuentra MyHomePage
 
 class HomeScreen extends StatelessWidget {
   final String userName; // Nombre del usuario (debes proporcionarlo)
 
   HomeScreen({required this.userName});
 
+  // Método para mostrar el diálogo de unirse a un grupo de Pals
+  void _showJoinGroupDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Ingresa el código del grupo:'),
+          content: TextField(
+            decoration: InputDecoration(hintText: 'Código'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Acción al presionar el botón de aceptar
+                // Aquí puedes implementar la lógica para unirse al grupo
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('payPals'),
+        automaticallyImplyLeading: false, // Elimina la flecha hacia atrás
+        actions: [
+          // Agrega un IconButton para mostrar el menú desplegable
+          PopupMenuButton(
+            icon: Icon(Icons.menu), // Agrega un icono al botón del menú
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem(
+                  value: "logout",
+                  child: Text("Cerrar Sesión"),
+                ),
+              ];
+            },
+            onSelected: (value) {
+              if (value == "logout") {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyHomePage()), // Reemplaza la pantalla actual por MyHomePage
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -44,7 +99,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => GroupScreen(groupName: 'bajitos',)),
+                  MaterialPageRoute(builder: (context) => GroupScreen(groupName: 'Grupo amor',)),
                 );
               },
               groupName: 'Grupo 1',
@@ -63,23 +118,37 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Acción al presionar el botón de agregar nuevo grupo de gastos
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddGroupPage()),
-          );
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Theme.of(context).colorScheme.background,
-        tooltip: 'Agregar nuevo grupo de Pals',
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              // Acción al presionar el botón de agregar nuevo grupo de Pals
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddGroupPage()),
+              );
+            },
+            backgroundColor: Theme.of(context).colorScheme.background,
+            tooltip: 'Agregar nuevo grupo de Pals',
+            child: Icon(Icons.add),
+          ),
+          SizedBox(width: 10), // Separación entre los botones
+          FloatingActionButton(
+            onPressed: () {
+              // Acción al presionar el botón de unirse a un grupo de Pals
+              _showJoinGroupDialog(context);
+            },
+            backgroundColor: Theme.of(context).colorScheme.background,
+            tooltip: 'Unirse a un grupo de Pals',
+            child: Icon(Icons.person_add),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
-
 class GroupButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String groupName;
