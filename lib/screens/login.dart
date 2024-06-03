@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_app_gastos/screens/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
 import '../user_auth/firebase_user_authentication/fire_auth_services.dart';
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -77,11 +78,15 @@ class _LoginPageState extends State<LoginPage> {
     try {
       User? user = await _authService.signInWithEmailAndPassword(email, password);
       if (user != null) {
-        print('Inicio de sesión exitoso: ${user.uid}');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen(userName: user.email ?? 'Usuario')),
-        );
+        String? userName = await _authService.getUserName(user.uid);
+        if (userName != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen(userName: userName)),
+          );
+        } else {
+          throw Exception('Nombre de usuario no encontrado');
+        }
       }
     } on FirebaseAuthException catch (e) {
       print('Error al iniciar sesión: ${e.message}');

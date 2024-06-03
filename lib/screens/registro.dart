@@ -117,33 +117,32 @@ class _RegistroPageState extends State<RegistroPage> {
     );
   }
 
-void _signup() async {
-  if (_formKey.currentState!.validate()) {
-    String username = _usernameController.text;
-    String email = _emailController.text;
-    String password = _passwordController.text;
+  void _signup() async {
+    if (_formKey.currentState!.validate()) {
+      String username = _usernameController.text;
+      String email = _emailController.text;
+      String password = _passwordController.text;
 
-    try {
-      User? user = await _authService.signUpWithEmailAndPassword(email, password);
-      if (user != null) {
-        print('Usuario registrado con éxito: ${user.uid}');
-        Navigator.pushReplacement(
+      try {
+        User? user = await _authService.signUpWithEmailAndPassword(email, password, username);
+        if (user != null) {
+          print('Usuario registrado con éxito: ${user.uid}');
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => HomeScreen(userName: username)),
           );
+        }
+      } on FirebaseAuthException catch (e) {
+        print('Error al registrar el usuario: ${e.message}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al registrar el usuario: ${e.message}')),
+        );
+      } catch (e) {
+        print('Error inesperado: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error inesperado: $e')),
+        );
       }
-    } on FirebaseAuthException catch (e) {
-      print('Error al registrar el usuario: ${e.message}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al registrar el usuario: ${e.message}')),
-      );
-    } catch (e) {
-      print('Error inesperado: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error inesperado: $e')),
-      );
     }
   }
-}
-
 }

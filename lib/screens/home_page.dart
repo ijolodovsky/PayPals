@@ -1,43 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_gastos/screens/add_group.dart';
-import 'package:flutter_app_gastos/screens/group.dart';
-import 'package:flutter_app_gastos/screens/initial_page.dart'; // Importa el archivo donde se encuentra MyHomePage
+import 'add_group.dart';
+import 'group.dart';
+import 'initial_page.dart'; // Importa el archivo donde se encuentra MyHomePage
 
 class HomeScreen extends StatelessWidget {
   final String userName; // Nombre del usuario (debes proporcionarlo)
 
   HomeScreen({required this.userName});
-
-  // Método para mostrar el diálogo de unirse a un grupo de Pals
-  void _showJoinGroupDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Ingresa el código del grupo:'),
-          content: TextField(
-            decoration: InputDecoration(hintText: 'Código'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Acción al presionar el botón de aceptar
-                // Aquí puedes implementar la lógica para unirse al grupo
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: Text('Aceptar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +21,8 @@ class HomeScreen extends StatelessWidget {
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem(
-                  value: "logout",
                   child: Text("Cerrar Sesión"),
+                  value: "logout",
                 ),
               ];
             },
@@ -129,19 +98,19 @@ class HomeScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => AddGroupPage()),
               );
             },
+            child: Icon(Icons.add),
             backgroundColor: Theme.of(context).colorScheme.background,
             tooltip: 'Agregar nuevo grupo de Pals',
-            child: Icon(Icons.add),
           ),
           SizedBox(width: 10), // Separación entre los botones
           FloatingActionButton(
             onPressed: () {
               // Acción al presionar el botón de unirse a un grupo de Pals
-              _showJoinGroupDialog(context);
+              // Aquí puedes implementar la lógica para unirse a un grupo
             },
+            child: Icon(Icons.person_add),
             backgroundColor: Theme.of(context).colorScheme.background,
             tooltip: 'Unirse a un grupo de Pals',
-            child: Icon(Icons.person_add),
           ),
         ],
       ),
@@ -149,6 +118,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+
 class GroupButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String groupName;
