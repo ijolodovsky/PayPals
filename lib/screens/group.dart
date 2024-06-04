@@ -52,9 +52,9 @@ class GroupScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Acción al presionar el botón de liquidar deudas
+                      // Acción al presionar el botón de ajustar cuentas
                     },
-                    child: Text('Liquidar Deudas'),
+                    child: Text('Ajustar cuentas'),
                   ),
                   SizedBox(height: 20),
                   Container(

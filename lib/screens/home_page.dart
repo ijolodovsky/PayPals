@@ -76,7 +76,7 @@ class HomeScreen extends StatelessWidget {
                   return Text('Error: ${snapshot.error}');
                 }
                 final userDoc = snapshot.data!;
-                final List<String> groupIds = List<String>.from(userDoc['grupos']);
+                final List<String> groupIds = List<String>.from(userDoc['groups']);
                 return ListView.builder(
                   itemCount: groupIds.length,
                   itemBuilder: (context, index) {

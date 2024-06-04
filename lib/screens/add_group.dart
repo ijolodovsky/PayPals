@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
 import 'package:flutter_app_gastos/widgets/groupCreatedDialog.dart';
+import 'package:flutter_app_gastos/screens/group.dart';
 
 class AddGroupPage extends StatefulWidget {
   @override
@@ -12,21 +13,46 @@ class _AddGroupPageState extends State<AddGroupPage> {
   final TextEditingController groupNameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   String uniqueCode = '';
+  bool isLoading = false;
 
   void createGroup() async {
     String groupName = groupNameController.text;
     String description = descriptionController.text;
 
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       String groupId = await crearGrupoEnFirestore(groupName, description);
 
-      // Agregar el ID del grupo a la subcolección "grupos" del usuario actual
       await agregarGrupoAlUsuario(groupId);
 
       setState(() {
         uniqueCode = groupId;
+        isLoading = false;
       });
+
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return GroupCreatedDialog(
+            uniqueCode: uniqueCode,
+            copyToClipboard: copyToClipboard,
+          );
+        },
+      );
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => GroupScreen(groupName: groupName),
+        ),
+      );
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
       print('Error al crear el grupo: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al crear el grupo')),
@@ -68,9 +94,36 @@ class _AddGroupPageState extends State<AddGroupPage> {
                 ),
               ),
               SizedBox(height: 20),
-              ElevatedButton(
-                child: Text('Crear Grupo'),
-                onPressed: createGroup,
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  TweenAnimationBuilder(
+                    tween: ColorTween(
+                      begin: Colors.blue,
+                      end: isLoading ? Colors.blue.withOpacity(0.5) : Colors.blue,
+                    ),
+                    duration: Duration(milliseconds: 300),
+                    builder: (context, Color? color, child) {
+                      return ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: color, // Color del botón
+                          minimumSize: Size(200, 50), // Tamaño del botón
+                        ),
+                        onPressed: isLoading ? null : createGroup,
+                        child: child,
+                      );
+                    },
+                    child: Text('Crear Grupo', style: TextStyle(color: Colors.white)),
+                  ),
+                  if (isLoading)
+                    Positioned.fill(
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),

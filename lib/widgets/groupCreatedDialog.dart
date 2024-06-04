@@ -4,7 +4,7 @@ class GroupCreatedDialog extends StatelessWidget {
   final String uniqueCode;
   final Function copyToClipboard;
 
-  GroupCreatedDialog({required this.uniqueCode, required this.copyToClipboard, required void Function() shareCode});
+  GroupCreatedDialog({required this.uniqueCode, required this.copyToClipboard});
 
   @override
   Widget build(BuildContext context) {
