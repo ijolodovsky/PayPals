@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_gastos/screens/add_expense.dart'; // Importa la pantalla de añadir gasto
+import 'package:flutter_app_gastos/main.dart';
+import 'package:flutter_app_gastos/screens/add_expense.dart';
+import 'package:provider/provider.dart'; // Importa la pantalla de añadir gasto
 
 class GroupScreen extends StatelessWidget {
   final String groupName; // Nombre del grupo (debes proporcionarlo)
@@ -13,8 +15,9 @@ class GroupScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Esto llevará al usuario de vuelta a la página anterior (la pantalla de inicio)
-          },
+            Navigator.pop(context);
+            Provider.of<MyAppState>(context, listen: false).updateHomePage();
+            },
         ),
       ),
       body: SingleChildScrollView(

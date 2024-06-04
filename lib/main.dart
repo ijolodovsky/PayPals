@@ -52,4 +52,8 @@ class MyAppState extends ChangeNotifier {
     _title = newTitle;
     notifyListeners();
   }
+
+  void updateHomePage() {
+    notifyListeners();
+  }
 }

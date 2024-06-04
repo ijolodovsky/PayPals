@@ -4,13 +4,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/services/FirestoreService.dart';
 import 'add_group.dart';
 import 'group.dart';
-import 'initial_page.dart'; // Importa el archivo donde se encuentra MyHomePage
+import 'initial_page.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final String userName;
-  final FirestoreService _firestoreService = FirestoreService();
 
   HomeScreen({required this.userName});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final FirestoreService _firestoreService = FirestoreService();
+  late Future<List<DocumentSnapshot<Map<String, dynamic>>>> _groupDocuments;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reloadData(); // Call here to ensure data reload on every entrance
+  }
+
+  void _reloadData() {
+    setState(() {
+      _groupDocuments = _firestoreService.getUserDocument(FirebaseAuth.instance.currentUser!.uid)
+          .then((userDoc) {
+        final List<String> groupIds = List<String>.from(userDoc['grupos']);
+        return Future.wait(groupIds.map((groupId) => _firestoreService.getGroupDocument(groupId)));
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,67 +72,57 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Logo y Bienvenida
           SizedBox(height: 20),
           CircleAvatar(
             radius: 40,
             backgroundColor: Colors.blue,
             child: Text(
-              userName.substring(0, 1).toUpperCase(),
+              widget.userName.substring(0, 1).toUpperCase(),
               style: TextStyle(fontSize: 24, color: Colors.white),
             ),
           ),
           SizedBox(height: 10),
           Text(
-            '¡Bienvenido, $userName!',
+            '¡Bienvenido, ${widget.userName}!',
             style: TextStyle(fontSize: 24),
           ),
           SizedBox(height: 30),
-          // Lista de grupos de gastos
           Text(
             'Tus Grupos de Gastos:',
             style: TextStyle(fontSize: 18),
           ),
           SizedBox(height: 10),
           Expanded(
-            child: FutureBuilder(
-              future: _firestoreService.getUserDocument(FirebaseAuth.instance.currentUser!.uid),
-              builder: (context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+            child: FutureBuilder<List<DocumentSnapshot<Map<String, dynamic>>>>(
+              future: _groupDocuments,
+              builder: (context, AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return CircularProgressIndicator();
                 }
                 if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 }
-                final userDoc = snapshot.data!;
-                final List<String> groupIds = List<String>.from(userDoc['groups']);
+                final groupDocs = snapshot.data!;
                 return ListView.builder(
-                  itemCount: groupIds.length,
+                  itemCount: groupDocs.length,
                   itemBuilder: (context, index) {
-                    return FutureBuilder(
-                      future: _firestoreService.getGroupDocument(groupIds[index]),
-                      builder: (context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> groupSnapshot) {
-                        if (groupSnapshot.connectionState == ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        }
-                        if (groupSnapshot.hasError) {
-                          return Text('Error: ${groupSnapshot.error}');
-                        }
-                        final groupName = groupSnapshot.data!['groupName'];
-                        final amount = 150.0; // Monto hardcodeado por ahora
-                        final isDebt = true; // Valor hardcodeado por ahora
-                        return GroupButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => GroupScreen(groupName: groupName)),
-                            );
-                          },
-                          groupName: groupName,
-                          amount: amount,
-                          isDebt: isDebt,
-                        );
-                      },
+                    final groupName = groupDocs[index]['groupName'];
+                    final amount = 150.0; // Hardcoded for now
+                    final isDebt = true; // Hardcoded for now
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0), // Adjust padding as needed
+                      child: GroupButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => GroupScreen(groupName: groupName)),
+                          );
+                        },
+                        groupName: groupName,
+                        amount: amount,
+                        isDebt: isDebt,
+                      ),
                     );
                   },
                 );
@@ -115,6 +134,15 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          FloatingActionButton(
+            onPressed: () {
+              _reloadData(); // Reload data when joining a new group
+            },
+            backgroundColor: Theme.of(context).colorScheme.background,
+            tooltip: 'Actualizar grupos',
+            child: Icon(Icons.refresh),
+          ),
+          SizedBox(width: 10),
           FloatingActionButton(
             onPressed: () {
               Navigator.push(
@@ -129,7 +157,7 @@ class HomeScreen extends StatelessWidget {
           SizedBox(width: 10),
           FloatingActionButton(
             onPressed: () {
-              // Acción al presionar el botón de unirse a un grupo de Pals
+              _reloadData(); // Reload data when joining a new group
             },
             child: Icon(Icons.person_add),
             backgroundColor: Theme.of(context).colorScheme.background,
@@ -168,7 +196,7 @@ class GroupButton extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.circle, // Cambia el icono según tus preferencias
+            Icons.circle, // Change icon based on preference
             color: isDebt ? Colors.red : Colors.green,
           ),
           SizedBox(width: 10),
