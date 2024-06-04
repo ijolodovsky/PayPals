@@ -18,6 +18,7 @@ dependencies:
   google_fonts: ^6.2.1  # Agregamos la dependencia de Google Fonts
   firebase_auth: ^4.20.0
   cloud_firestore: ^4.17.5
+  share: ^2.0.4
 
 dev_dependencies:
   flutter_test:

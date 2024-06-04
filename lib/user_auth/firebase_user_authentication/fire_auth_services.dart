@@ -15,7 +15,7 @@ class FirebaseAuthService {
         await _firestore.collection('users').doc(user.uid).set({
           'email': email,
           'userName': userName,
-          // Agrega más campos según sea necesario
+          'groups': <String>[],
         });
       }
       return user;
@@ -51,5 +51,14 @@ class FirebaseAuthService {
     } catch (e) {
       print('Error al enviar el correo de restablecimiento: $e');
     }
+  }
+}
+
+String obtenerIdUsuarioActual() {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    return user.uid;
+  } else {
+    throw Exception('Usuario no autenticado');
   }
 }

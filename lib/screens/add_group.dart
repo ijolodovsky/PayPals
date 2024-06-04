@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Importa esta librería
+import 'package:flutter/services.dart';
+import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
+import 'package:flutter_app_gastos/widgets/groupCreatedDialog.dart';
 
 class AddGroupPage extends StatefulWidget {
   @override
@@ -9,22 +11,31 @@ class AddGroupPage extends StatefulWidget {
 class _AddGroupPageState extends State<AddGroupPage> {
   final TextEditingController groupNameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  String uniqueCode = ''; // Cambio aquí: inicializo uniqueCode como una cadena vacía
+  String uniqueCode = '';
 
-  String generateUniqueCode() {
-    // Lógica para generar un código único (puede ser más compleja en producción)
-    return 'ABCD123'; // Ejemplo: código hardcodeado
-  }
+  void createGroup() async {
+    String groupName = groupNameController.text;
+    String description = descriptionController.text;
 
-  void createGroup() {
-    // Implementar la lógica para crear un nuevo grupo de gastos
-    uniqueCode = generateUniqueCode();
-    print('Código único generado: $uniqueCode');
-    // Aquí puedes guardar los datos en la base de datos
+    try {
+      String groupId = await crearGrupoEnFirestore(groupName, description);
+
+      // Agregar el ID del grupo a la subcolección "grupos" del usuario actual
+      await agregarGrupoAlUsuario(groupId);
+
+      setState(() {
+        uniqueCode = groupId;
+      });
+    } catch (e) {
+      print('Error al crear el grupo: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al crear el grupo')),
+      );
+    }
   }
 
   void copyToClipboard() {
-    Clipboard.setData(ClipboardData(text: uniqueCode)); // Copia el código al portapapeles
+    Clipboard.setData(ClipboardData(text: uniqueCode));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Código copiado al portapapeles')),
     );
@@ -42,7 +53,6 @@ class _AddGroupPageState extends State<AddGroupPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // Campos de texto para nombre y descripción del grupo
               TextField(
                 controller: groupNameController,
                 decoration: InputDecoration(
@@ -60,36 +70,7 @@ class _AddGroupPageState extends State<AddGroupPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 child: Text('Crear Grupo'),
-                onPressed: () {
-                  createGroup();
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Grupo Creado'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('Código único: $uniqueCode'),
-                            SizedBox(height: 10),
-                            IconButton(
-                              onPressed: copyToClipboard, // Copia el código al portapapeles
-                              icon: Icon(Icons.copy), // Icono de copiar
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Aceptar'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
+                onPressed: createGroup,
               ),
             ],
           ),
