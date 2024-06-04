@@ -12,6 +12,7 @@ Future<String> crearGrupoEnFirestore(String groupName, String description) async
     DocumentReference nuevoGrupoRef = await gruposCollection.add({
       'groupName': groupName,
       'description': description,
+      'expenses': <Map<String, dynamic>>[],
     });
 
     // Devolver el ID del documento recién creado como identificador único del grupo
