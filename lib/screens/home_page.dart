@@ -25,12 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _reloadData();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _reloadData(); // Call here to ensure data reload on every entrance
-  }
-
   void _reloadData() {
     setState(() {
       _groupDocuments = _firestoreService.getUserDocument(FirebaseAuth.instance.currentUser!.uid)
@@ -107,11 +101,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: groupDocs.length,
                   itemBuilder: (context, index) {
                     final groupName = groupDocs[index]['groupName'];
-                    final amount = 150.0; // Hardcoded for now
-                    final isDebt = true; // Hardcoded for now
+                    final amount = 150.0;
+                    final isDebt = true;
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0), // Adjust padding as needed
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
                       child: GroupButton(
                         onPressed: () {
                           Navigator.push(
@@ -136,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           FloatingActionButton(
             onPressed: () {
-              _reloadData(); // Reload data when joining a new group
+              _reloadData();
             },
             backgroundColor: Theme.of(context).colorScheme.background,
             tooltip: 'Actualizar grupos',
@@ -144,11 +138,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SizedBox(width: 10),
           FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => AddGroupPage()),
               );
+              _reloadData();
             },
             child: Icon(Icons.add),
             backgroundColor: Theme.of(context).colorScheme.background,
@@ -157,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(width: 10),
           FloatingActionButton(
             onPressed: () {
-              _reloadData(); // Reload data when joining a new group
+              _reloadData();
             },
             child: Icon(Icons.person_add),
             backgroundColor: Theme.of(context).colorScheme.background,
