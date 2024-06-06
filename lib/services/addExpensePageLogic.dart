@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
-import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
+
 
 FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-
+FirebaseAuthService _authService = FirebaseAuthService();
 
 class Gasto {
   final String description;
@@ -24,15 +23,15 @@ class Gasto {
 Future<String> cargarGastoEnGrupo(String groupId, String description, double amount) async {
   try {
     DocumentReference grupoDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
+    String userName = await _authService.getUserName(obtenerIdUsuarioActual()) ?? 'Usuario desconocido';
 
     Gasto nuevoGasto = Gasto(
       description: description,
       amount: amount,
       date: Timestamp.now(),
-      payer: obtenerIdUsuarioActual(),
+      payer: userName,
     );
 
-    // Actualizar el campo 'expenses' del documento con el nuevo gasto
     await grupoDocRef.update({
       'expenses': FieldValue.arrayUnion([{
         'description': nuevoGasto.description,
@@ -48,8 +47,6 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
     rethrow;
   }
 }
-
-
 
 Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
   try {
@@ -73,8 +70,6 @@ Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
     return [];
   } catch (error) {
     print('Error al obtener los gastos del grupo: $error');
-    throw error;
+    rethrow;
   }
 }
-
-

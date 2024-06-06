@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_gastos/main.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
 class GroupScreen extends StatefulWidget {
@@ -39,7 +37,7 @@ class _GroupScreenState extends State<GroupScreen> {
             Navigator.pop(context);
           },
         ),
-        title: Text(widget.groupName),
+        title: Text("Grupo"),
       ),
       body: SingleChildScrollView(
         child: Column(
