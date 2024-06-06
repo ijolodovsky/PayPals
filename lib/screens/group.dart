@@ -19,15 +19,16 @@ class GroupScreen extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context);
             Provider.of<MyAppState>(context, listen: false).updateHomePage();
-            },
+          },
         ),
+        title: Text(groupName),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              color: Colors.blue, // Color del grupo
+              color: Colors.blue,
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               child: Row(
                 children: <Widget>[
@@ -38,8 +39,12 @@ class GroupScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 10),
                   Text(
-                    groupName, //cambiar a group name
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    groupName,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -49,8 +54,6 @@ class GroupScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  
-                  //---------------
                   SizedBox(height: 10),
                   DebtTile(
                     debtor: 'Micaela',
@@ -59,7 +62,7 @@ class GroupScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Presionar el botón de ajustar cuentas
+                      // Add your logic for settling debts here
                     },
                     child: Text('Ajustar cuentas'),
                   ),
@@ -73,9 +76,9 @@ class GroupScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        FutureBuilder(
+                        FutureBuilder<List<Gasto>>(
                           future: obtenerGastosDeGrupo(groupId),
-                          builder: (context, AsyncSnapshot<List<Gasto>> snapshot) {
+                          builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return Center(child: CircularProgressIndicator());
                             } else if (snapshot.hasError) {
@@ -116,17 +119,15 @@ class GroupScreen extends StatelessWidget {
           ],
         ),
       ),
-floatingActionButton: FloatingActionButton(
-  onPressed: () {
-    // Acción al presionar el botón de añadir gasto
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AddExpenseScreen(groupId: groupId)), // Pasar el ID del grupo
-    );
-  },
-  child: Icon(Icons.add),
-),
-
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddExpenseScreen(groupId: groupId)),
+          );
+        },
+        child: Icon(Icons.add),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
@@ -178,11 +179,11 @@ class ExpenseTile extends StatelessWidget {
             color: Colors.grey.withOpacity(0.5),
             spreadRadius: 1,
             blurRadius: 3,
-            offset: Offset(0, 2), // changes position of shadow
+            offset: Offset(0, 2),
           ),
         ],
       ),
-      margin: EdgeInsets.only(bottom: 10), // Margen inferior para evitar el desbordamiento
+      margin: EdgeInsets.only(bottom: 10),
       child: ListTile(
         leading: Column(
           mainAxisAlignment: MainAxisAlignment.center,

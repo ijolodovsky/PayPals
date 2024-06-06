@@ -34,7 +34,12 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
 
     // Actualizar el campo 'expenses' del documento con el nuevo gasto
     await grupoDocRef.update({
-      'expenses': FieldValue.arrayUnion([nuevoGasto]),
+      'expenses': FieldValue.arrayUnion([{
+        'description': nuevoGasto.description,
+        'amount': nuevoGasto.amount,
+        'date': nuevoGasto.date,
+        'payer': nuevoGasto.payer,
+      }]),
     });
 
     return 'Gasto agregado correctamente';
@@ -43,6 +48,7 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
     rethrow;
   }
 }
+
 
 
 Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
