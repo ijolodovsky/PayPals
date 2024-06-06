@@ -14,6 +14,9 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool _invalidEmail = false;
+  bool _invalidPassword = false;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -34,8 +37,8 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
-                width: 200, // Ancho deseado
-                height: 200, // Alto deseado
+                width: 200,
+                height: 200,
                 padding: EdgeInsets.all(30),
                 child: Image.asset('assets/images/logo1.png'),
               ),
@@ -44,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(
                   hintText: 'Correo',
                   hintStyle: TextStyle(color: Colors.black54),
+                  errorText: _invalidEmail ? 'Correo electrónico inválido' : null,
                 ),
               ),
               TextField(
@@ -51,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(
                   hintText: 'Contraseña',
                   hintStyle: TextStyle(color: Colors.black54),
+                  errorText: _invalidPassword ? 'Contraseña inválida' : null,
                 ),
                 obscureText: true,
               ),
@@ -75,6 +80,11 @@ class _LoginPageState extends State<LoginPage> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
+    setState(() {
+      _invalidEmail = false;
+      _invalidPassword = false;
+    });
+
     try {
       User? user = await _authService.signInWithEmailAndPassword(email, password);
       if (user != null) {
@@ -87,6 +97,12 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           throw Exception('Nombre de usuario no encontrado');
         }
+      } else {
+        // Usuario no encontrado o contraseña incorrecta
+        setState(() {
+          _invalidEmail = true;
+          _invalidPassword = true;
+        });
       }
     } on FirebaseAuthException catch (e) {
       print('Error al iniciar sesión: ${e.message}');

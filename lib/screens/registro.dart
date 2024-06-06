@@ -69,6 +69,8 @@ class _RegistroPageState extends State<RegistroPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor ingrese su correo';
+                      } else if (!value.contains('@') || !value.contains('.')) {
+                        return 'Por favor ingrese un correo electrónico válido';
                       }
                       return null;
                     },
@@ -83,6 +85,8 @@ class _RegistroPageState extends State<RegistroPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor ingrese su contraseña';
+                      } else if (value.length < 6) {
+                        return 'La contraseña debe tener al menos 6 caracteres';
                       }
                       return null;
                     },
