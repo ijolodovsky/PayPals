@@ -21,7 +21,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +30,13 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'payPals',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0x28D6F9)),
+          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0x0028d6f9)),
           buttonTheme: ButtonThemeData(
             buttonColor: const Color.fromARGB(255, 39, 125, 129),
             textTheme: ButtonTextTheme.primary,
           ),
           fontFamily: GoogleFonts.montserrat().fontFamily,
-          scaffoldBackgroundColor: const Color(0xFFFDFD),
+          scaffoldBackgroundColor: const Color(0x00fffdfd),
         ),
         home: MyHomePage(),
       ),

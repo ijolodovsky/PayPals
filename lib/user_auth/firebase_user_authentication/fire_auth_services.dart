@@ -21,7 +21,7 @@ class FirebaseAuthService {
       return user;
     } catch (e) {
       print('Error al registrarse: $e');
-      throw e; // Propagar el error para que se maneje en el código de la aplicación
+      rethrow; // Propagar el error para que se maneje en el código de la aplicación
     }
   }
 

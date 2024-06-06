@@ -38,7 +38,7 @@ class _AddGroupPageState extends State<AddGroupPage> {
         builder: (BuildContext context) {
           return GroupCreatedDialog(
             uniqueCode: uniqueCode,
-            copyToClipboard: copyToClipboard,
+            copyToClipboard: copyToClipboard
           );
         },
       );

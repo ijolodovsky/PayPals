@@ -105,8 +105,8 @@ class _RegistroPageState extends State<RegistroPage> {
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    child: Text('Registrar'),
                     onPressed: _signup,
+                    child: Text('Registrar'),
                   ),
                 ],
               ),

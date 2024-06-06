@@ -47,8 +47,8 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem(
-                  child: Text("Cerrar Sesión"),
                   value: "logout",
+                  child: Text("Cerrar Sesión"),
                 ),
               ];
             },
@@ -101,8 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: groupDocs.length,
                   itemBuilder: (context, index) {
                     final groupName = groupDocs[index]['groupName'];
-                    final amount = 150.0;
-                    final isDebt = true;
+                    const amount = 150.0;
+                    const isDebt = true;
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -145,18 +145,18 @@ class _HomeScreenState extends State<HomeScreen> {
               );
               _reloadData();
             },
-            child: Icon(Icons.add),
             backgroundColor: Theme.of(context).colorScheme.background,
             tooltip: 'Agregar nuevo grupo de Pals',
+            child: Icon(Icons.add),
           ),
           SizedBox(width: 10),
           FloatingActionButton(
             onPressed: () {
               _reloadData();
             },
-            child: Icon(Icons.person_add),
             backgroundColor: Theme.of(context).colorScheme.background,
             tooltip: 'Unirse a un grupo de Pals',
+            child: Icon(Icons.person_add),
           ),
         ],
       ),

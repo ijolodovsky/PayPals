@@ -56,13 +56,13 @@ class _LoginPageState extends State<LoginPage> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                child: Text('Ingresar'),
                 onPressed: _login,
+                child: Text('Ingresar'),
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                child: Text('Olvidé mi contraseña'),
                 onPressed: _showPasswordResetDialog,
+                child: Text('Olvidé mi contraseña'),
               ),
             ],
           ),
@@ -105,12 +105,12 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        final TextEditingController _resetEmailController = TextEditingController();
+        final TextEditingController resetEmailController = TextEditingController();
 
         return AlertDialog(
           title: Text('Restablecer contraseña'),
           content: TextField(
-            controller: _resetEmailController,
+            controller: resetEmailController,
             decoration: InputDecoration(
               hintText: 'Ingrese su correo electrónico',
             ),
@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
             TextButton(
               child: Text('Enviar'),
               onPressed: () async {
-                String resetEmail = _resetEmailController.text;
+                String resetEmail = resetEmailController.text;
 
                 try {
                   await _authService.sendPasswordResetEmail(resetEmail);

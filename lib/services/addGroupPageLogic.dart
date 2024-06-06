@@ -20,7 +20,7 @@ Future<String> crearGrupoEnFirestore(String groupName, String description) async
   } catch (error) {
     // Manejar cualquier error que ocurra durante la creación del grupo
     print('Error al crear el grupo en Firestore: $error');
-    throw error;
+    rethrow;
   }
 }
 Future<void> agregarGrupoAlUsuario(String groupId) async {
@@ -51,7 +51,7 @@ Future<void> agregarGrupoAlUsuario(String groupId) async {
     }, SetOptions(merge: true)); // Usamos merge: true para fusionar los datos sin reemplazar el documento completo
   } catch (e) {
     print('Error al agregar el grupo al usuario: $e');
-    throw e;
+    rethrow;
   }
 }
 
