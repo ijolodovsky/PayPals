@@ -42,10 +42,10 @@ class _RegistroPageState extends State<RegistroPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Container(
-                    width: 200, // Ancho deseado
-                    height: 200, // Alto deseado
+                    width: 200,
+                    height: 200,
                     padding: EdgeInsets.all(30),
-                    child: Image.asset('assets/images/image.png'),
+                    child: Image.asset('assets/images/logo1.png'),
                   ),
                   TextFormField(
                     controller: _usernameController,

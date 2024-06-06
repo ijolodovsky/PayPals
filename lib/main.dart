@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'payPals',
+        title: 'PayPals',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0x0028d6f9)),
           buttonTheme: ButtonThemeData(
@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  String _title = 'payPals';
+  String _title = 'PayPals';
   String get title => _title;
 
   void changeTitle(String newTitle) {

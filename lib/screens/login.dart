@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
                 width: 200, // Ancho deseado
                 height: 200, // Alto deseado
                 padding: EdgeInsets.all(30),
-                child: Image.asset('assets/images/image.png'),
+                child: Image.asset('assets/images/logo1.png'),
               ),
               TextField(
                 controller: _emailController,

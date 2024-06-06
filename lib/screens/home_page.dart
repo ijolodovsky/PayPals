@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('payPals'),
+        title: Text('PayPals'),
         automaticallyImplyLeading: false,
         actions: [
           PopupMenuButton(

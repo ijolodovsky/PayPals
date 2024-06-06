@@ -7,7 +7,7 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('payPals'),
+        title: Text('PayPals'),
         centerTitle: true,
       ),
       body: Center(
@@ -18,7 +18,7 @@ class MyHomePage extends StatelessWidget {
               width: 200,
               height: 200,
               padding: const EdgeInsets.all(30),
-              child: Image.asset('assets/images/image.png'),
+              child: Image.asset('assets/images/logo1.png'),
             ),
             ElevatedButton(
               onPressed: () {
