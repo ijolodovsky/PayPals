@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/main.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
-import 'package:provider/provider.dart'; // Importa la pantalla de añadir gasto
+import 'package:provider/provider.dart';
+import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
 class GroupScreen extends StatelessWidget {
-  final String groupName; // Nombre del grupo (debes proporcionarlo)
+  final String groupId;
+  final String groupName;
 
-  GroupScreen({required this.groupName});
+  GroupScreen({required this.groupId, required this.groupName});
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +32,13 @@ class GroupScreen extends StatelessWidget {
               child: Row(
                 children: <Widget>[
                   Icon(
-                    Icons.group, // Cambia el icono según tus preferencias
+                    Icons.group,
                     size: 40,
-                    color: Colors.white, // Cambia el color según tus preferencias
+                    color: Colors.white,
                   ),
                   SizedBox(width: 10),
                   Text(
-                    groupName,
+                    groupName, //cambiar a group name
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ],
@@ -47,6 +49,8 @@ class GroupScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  
+                  //---------------
                   SizedBox(height: 10),
                   DebtTile(
                     debtor: 'Micaela',
@@ -55,7 +59,7 @@ class GroupScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Acción al presionar el botón de ajustar cuentas
+                      // Presionar el botón de ajustar cuentas
                     },
                     child: Text('Ajustar cuentas'),
                   ),
@@ -69,19 +73,40 @@ class GroupScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Listado de gastos:',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        FutureBuilder(
+                          future: obtenerGastosDeGrupo(groupId),
+                          builder: (context, AsyncSnapshot<List<Gasto>> snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Text('Error al obtener los gastos del grupo: ${snapshot.error}');
+                            } else {
+                              List<Gasto> expenses = snapshot.data ?? [];
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'Gastos:',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Column(
+                                    children: expenses.map((expense) {
+                                      DateTime date = expense.date.toDate();
+                                      return ExpenseTile(
+                                        month: date.month.toString(),
+                                        day: date.day.toString(),
+                                        title: expense.description,
+                                        payer: expense.payer,
+                                        amount: expense.amount,
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              );
+                            }
+                          },
                         ),
-                        SizedBox(height: 10),
-                        ExpenseTile(
-                          month: 'Feb.',
-                          day: '18',
-                          title: 'Uber',
-                          payer: 'Pagaste',
-                          amount: 7000.0,
-                        ),
-                        SizedBox(height: 10),
                       ],
                     ),
                   ),
@@ -91,16 +116,17 @@ class GroupScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Acción al presionar el botón de añadir gasto
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddExpenseScreen()), // Navegar a la pantalla de añadir gasto
-          );
-        },
-        child: Icon(Icons.add),
-      ),
+floatingActionButton: FloatingActionButton(
+  onPressed: () {
+    // Acción al presionar el botón de añadir gasto
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddExpenseScreen(groupId: groupId)), // Pasar el ID del grupo
+    );
+  },
+  child: Icon(Icons.add),
+),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

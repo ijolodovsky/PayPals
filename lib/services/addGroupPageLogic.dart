@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
 
 FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -12,7 +13,7 @@ Future<String> crearGrupoEnFirestore(String groupName, String description) async
     DocumentReference nuevoGrupoRef = await gruposCollection.add({
       'groupName': groupName,
       'description': description,
-      'expenses': <Map<String, dynamic>>[],
+      'expenses': <Gasto>[],
     });
 
     // Devolver el ID del documento recién creado como identificador único del grupo

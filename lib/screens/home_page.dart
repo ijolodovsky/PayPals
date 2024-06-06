@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => GroupScreen(groupName: groupName)),
+                            MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupDocs[index].id, groupName: groupName)),
                           );
                         },
                         groupName: groupName,

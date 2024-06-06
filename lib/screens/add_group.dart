@@ -45,7 +45,7 @@ class _AddGroupPageState extends State<AddGroupPage> {
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => GroupScreen(groupName: groupName),
+          builder: (context) => GroupScreen(groupName: groupName, groupId: groupId),
         ),
       );
     } catch (e) {

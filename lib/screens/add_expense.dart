@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
 class AddExpenseScreen extends StatefulWidget {
+  final String groupId;
+  
+  AddExpenseScreen({required this.groupId});
+
   @override
   _AddExpenseScreenState createState() => _AddExpenseScreenState();
 }
@@ -17,38 +22,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return amount != null && amount > 0;
   }
 
-  void _addExpense() {
-    final description = _descriptionController.text; // Obtener la descripción del gasto
-    final amount = double.parse(_amountController.text); // Obtener el monto del gasto
+  void _addExpense() async {
+    final description = _descriptionController.text;
+    final amount = double.parse(_amountController.text);
     
-    // Aquí puedes implementar la lógica para añadir el gasto
     if (_validateAmount(_amountController.text)) {
-      // Ejemplo de implementación: mostrar un diálogo de confirmación
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Confirmar'),
-            content: Text('¿Deseas agregar el gasto "$description" por \$${amount.toStringAsFixed(2)}?'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  // Agregar el gasto aquí
-                  Navigator.pop(context); // Cerrar el diálogo
-                  // Puedes ejecutar la lógica para agregar el gasto a tu base de datos o donde sea necesario
-                },
-                child: Text('Aceptar'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // Cerrar el diálogo
-                },
-                child: Text('Cancelar'),
-              ),
-            ],
-          );
-        },
-      );
+      try {
+        await cargarGastoEnGrupo(widget.groupId, description, amount);
+        Navigator.pop(context);
+      } catch (error) {
+        print('Error al agregar el gasto: $error');
+        // Manejar el error según sea necesario
+      }
     }
   }
 

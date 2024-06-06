@@ -15,7 +15,7 @@ class FirebaseAuthService {
         await _firestore.collection('users').doc(user.uid).set({
           'email': email,
           'userName': userName,
-          'groups': <String>[],
+          'grupos': <String>[],
         });
       }
       return user;

@@ -7,7 +7,7 @@ class FirestoreService {
     return await _firestore.collection('users').doc(userId).get();
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getGroupDocument(String groupId) async {
+Future<DocumentSnapshot<Map<String, dynamic>>> getGroupDocument(String groupId) async {
     return await _firestore.collection('grupos').doc(groupId).get();
   }
 }
