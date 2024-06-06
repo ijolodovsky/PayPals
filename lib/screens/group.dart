@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
+import 'package:flutter_app_gastos/screens/add_group.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
+import 'package:flutter_app_gastos/widgets/groupCreatedDialog.dart';
+import 'package:intl/intl.dart';
+import 'package:share/share.dart';
 
 class GroupScreen extends StatefulWidget {
   final String groupId;
@@ -26,6 +31,23 @@ class _GroupScreenState extends State<GroupScreen> {
       _expensesFuture = obtenerGastosDeGrupo(widget.groupId);
     });
   }
+
+  void copyToClipboard() {
+    Clipboard.setData(ClipboardData(text: widget.groupId));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Código copiado al portapapeles')),
+    );
+  }
+
+  void _shareGroupCode() {
+    Share.share('Únete a nuestro grupo usando el código: ${widget.groupId}');
+  }
+
+  String obtenerNombreMesAbreviado(DateTime fecha) {
+    final locale = Intl.getCurrentLocale();
+    final formatter = DateFormat('MMM', locale);
+    return formatter.format(fecha).toUpperCase();
+}
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +100,7 @@ class _GroupScreenState extends State<GroupScreen> {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      
+                      // Acción para ajustar cuentas
                     },
                     child: Text('Ajustar cuentas'),
                   ),
@@ -113,7 +135,7 @@ class _GroupScreenState extends State<GroupScreen> {
                                     children: expenses.map((expense) {
                                       DateTime date = expense.date.toDate();
                                       return ExpenseTile(
-                                        month: date.month.toString(),
+                                        month: obtenerNombreMesAbreviado(date),
                                         day: date.day.toString(),
                                         title: expense.description,
                                         payer: expense.payer,
@@ -135,18 +157,35 @@ class _GroupScreenState extends State<GroupScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddExpenseScreen(groupId: widget.groupId),
+      floatingActionButton: Stack(
+        children: <Widget>[
+          Align(
+            alignment: Alignment.bottomRight,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddExpenseScreen(groupId: widget.groupId),
+                  ),
+                ).then((_) {
+                  _reloadData();
+                });
+              },
+              child: Icon(Icons.add),
             ),
-          ).then((_) {
-            _reloadData();
-          });
-        },
-        child: Icon(Icons.add),
+          ),
+          Padding(
+            padding: EdgeInsets.only(right: 80),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: FloatingActionButton(
+                onPressed: copyToClipboard,
+                child: Icon(Icons.share),
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -210,7 +249,7 @@ class ExpenseTile extends StatelessWidget {
           children: [
             Text(
               month,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 1),
             Text(

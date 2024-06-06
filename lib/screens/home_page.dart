@@ -91,10 +91,10 @@ class _HomeScreenState extends State<HomeScreen> {
               future: _groupDocuments,
               builder: (context, AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
                 final groupDocs = snapshot.data!;
                 return ListView.builder(
@@ -125,40 +125,46 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () {
-              _reloadData();
-            },
-            backgroundColor: Theme.of(context).colorScheme.background,
-            tooltip: 'Actualizar grupos',
-            child: Icon(Icons.refresh),
-          ),
-          SizedBox(width: 10),
-          FloatingActionButton(
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddGroupPage()),
-              );
-              _reloadData();
-            },
-            backgroundColor: Theme.of(context).colorScheme.background,
-            tooltip: 'Agregar nuevo grupo de Pals',
-            child: Icon(Icons.add),
-          ),
-          SizedBox(width: 10),
-          FloatingActionButton(
-            onPressed: () {
-              _reloadData();
-            },
-            backgroundColor: Theme.of(context).colorScheme.background,
-            tooltip: 'Unirse a un grupo de Pals',
-            child: Icon(Icons.person_add),
-          ),
-        ],
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20.0, right: 20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                _reloadData();
+              },
+              backgroundColor: Theme.of(context).colorScheme.background,
+              mini: true,
+              tooltip: 'Actualizar grupos',
+              child: Icon(Icons.refresh),
+            ),
+            SizedBox(width: 10),
+            FloatingActionButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddGroupPage()),
+                );
+                _reloadData();
+              },
+              backgroundColor: Theme.of(context).colorScheme.background,
+              mini: true,
+              tooltip: 'Agregar nuevo grupo de Pals',
+              child: Icon(Icons.add),
+            ),
+            SizedBox(width: 10),
+            FloatingActionButton(
+              onPressed: () {
+                _reloadData();
+              },
+              backgroundColor: Theme.of(context).colorScheme.background,
+              mini: true,
+              tooltip: 'Unirse a un grupo de Pals',
+              child: Icon(Icons.person_add),
+            ),
+          ],
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
