@@ -3,7 +3,7 @@ import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final String groupId;
-  
+
   AddExpenseScreen({required this.groupId});
 
   @override
@@ -25,14 +25,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void _addExpense() async {
     final description = _descriptionController.text;
     final amount = double.parse(_amountController.text);
-    
+
     if (_validateAmount(_amountController.text)) {
       try {
         await cargarGastoEnGrupo(widget.groupId, description, amount);
         Navigator.pop(context);
       } catch (error) {
         print('Error al agregar el gasto: $error');
-        // Manejar el error según sea necesario
       }
     }
   }

@@ -4,11 +4,30 @@ import 'package:flutter_app_gastos/screens/add_expense.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
-class GroupScreen extends StatelessWidget {
+class GroupScreen extends StatefulWidget {
   final String groupId;
   final String groupName;
 
   GroupScreen({required this.groupId, required this.groupName});
+
+  @override
+  _GroupScreenState createState() => _GroupScreenState();
+}
+
+class _GroupScreenState extends State<GroupScreen> {
+  late Future<List<Gasto>> _expensesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadData();
+  }
+
+  void _reloadData() {
+    setState(() {
+      _expensesFuture = obtenerGastosDeGrupo(widget.groupId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +37,9 @@ class GroupScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
-            Provider.of<MyAppState>(context, listen: false).updateHomePage();
           },
         ),
-        title: Text(groupName),
+        title: Text(widget.groupName),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -39,7 +57,7 @@ class GroupScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 10),
                   Text(
-                    groupName,
+                    widget.groupName,
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -62,7 +80,7 @@ class GroupScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Add your logic for settling debts here
+                      
                     },
                     child: Text('Ajustar cuentas'),
                   ),
@@ -77,7 +95,7 @@ class GroupScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         FutureBuilder<List<Gasto>>(
-                          future: obtenerGastosDeGrupo(groupId),
+                          future: _expensesFuture,
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return Center(child: CircularProgressIndicator());
@@ -123,8 +141,12 @@ class GroupScreen extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddExpenseScreen(groupId: groupId)),
-          );
+            MaterialPageRoute(
+              builder: (context) => AddExpenseScreen(groupId: widget.groupId),
+            ),
+          ).then((_) {
+            _reloadData();
+          });
         },
         child: Icon(Icons.add),
       ),
