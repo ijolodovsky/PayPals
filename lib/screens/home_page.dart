@@ -5,6 +5,8 @@ import 'package:flutter_app_gastos/services/FirestoreService.dart';
 import 'add_group.dart';
 import 'group.dart';
 import 'initial_page.dart';
+import 'package:flutter_app_gastos/widgets/joinGroupDialog.dart';
+import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userName;
@@ -33,6 +35,26 @@ class _HomeScreenState extends State<HomeScreen> {
         return Future.wait(groupIds.map((groupId) => _firestoreService.getGroupDocument(groupId)));
       });
     });
+  }
+
+  Future<void> _joinGroup(String groupId) async {
+    try {
+      // Verifica si el grupo existe en Firestore
+      DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
+
+      if (groupDoc.exists) {
+        // Si el grupo existe, agrégalo al usuario
+        await agregarGrupoAlUsuario(groupId);
+        _reloadData();
+      } else {
+        // Si el grupo no existe, muestra un mensaje de error
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('El grupo no existe')));
+      }
+    } catch (e) {
+      // Manejar el error si no se puede unir al grupo
+      print('Error al unirse al grupo: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al unirse al grupo')));
+    }
   }
 
   @override
@@ -156,7 +178,16 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(width: 10),
             FloatingActionButton(
               onPressed: () {
-                _reloadData();
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return JoinGroupDialog(
+                      onJoin: (groupId) {
+                        _joinGroup(groupId);
+                      },
+                    );
+                  },
+                );
               },
               backgroundColor: Theme.of(context).colorScheme.background,
               mini: true,

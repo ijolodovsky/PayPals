@@ -33,15 +33,13 @@ Future<void> agregarGrupoAlUsuario(String groupId) async {
     DocumentSnapshot userDoc = await userDocRef.get();
     List<String> grupos = [];
     if (userDoc.exists) {
-      // Si el documento del usuario existe, obtenemos la lista actual de grupos
-      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?; // Casting del objeto
+      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
       if (userData != null && userData.containsKey('grupos')) {
-        // Verificamos que el objeto userData no sea nulo y contenga la propiedad 'grupos'
-        grupos = List<String>.from(userData['grupos']); // Accedemos a la propiedad 'grupos' de manera segura
+        grupos = List<String>.from(userData['grupos']);
       }
     }
 
-    // Agregamos el nuevo grupo a la lista (si aún no está presente)
+    // Agregamos el nuevo grupo a la lista (si no esta presente)
     if (!grupos.contains(groupId)) {
       grupos.add(groupId);
     }
@@ -49,7 +47,7 @@ Future<void> agregarGrupoAlUsuario(String groupId) async {
     // Actualizamos solo la lista de grupos del usuario
     await userDocRef.set({
       'grupos': grupos,
-    }, SetOptions(merge: true)); // Usamos merge: true para fusionar los datos sin reemplazar el documento completo
+    }, SetOptions(merge: true));
   } catch (e) {
     print('Error al agregar el grupo al usuario: $e');
     rethrow;
