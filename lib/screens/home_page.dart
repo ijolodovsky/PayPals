@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (groupDoc.exists) {
         // Si el grupo existe, agrégalo al usuario
         await agregarGrupoAlUsuario(groupId);
+        await agregarUsuarioAlGrupo(groupId);
         _reloadData();
       } else {
         // Si el grupo no existe, muestra un mensaje de error

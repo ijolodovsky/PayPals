@@ -14,6 +14,7 @@ Future<String> crearGrupoEnFirestore(String groupName, String description) async
       'groupName': groupName,
       'description': description,
       'expenses': <Gasto>[],
+      'members': <String>[obtenerIdUsuarioActual()],
     });
 
     // Devolver el ID del documento recién creado como identificador único del grupo
@@ -54,3 +55,27 @@ Future<void> agregarGrupoAlUsuario(String groupId) async {
   }
 }
 
+Future<void> agregarUsuarioAlGrupo(String groupId) async {
+  try {
+    String userId = obtenerIdUsuarioActual();
+    DocumentReference groupDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
+
+    // Obtenemos la lista actual de grupos del usuario (si existe)
+    DocumentSnapshot groupDoc = await groupDocRef.get();
+    List<String> miembros = [];
+    if (groupDoc.exists) {
+      //obtener lista de miembros
+      miembros = List<String>.from(groupDoc['members']);
+      if(!miembros.contains(userId)){
+        miembros.add(userId);
+      }
+      // Actualizamos solo la lista de grupos del usuario
+      await groupDocRef.set({
+        'members': miembros,
+      }, SetOptions(merge: true));
+    }
+  } catch (e) {
+    print('Error al usuario al grupo: $e');
+    rethrow;
+  }
+}

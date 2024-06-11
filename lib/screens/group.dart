@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
-import 'package:flutter_app_gastos/screens/add_group.dart';
+import 'package:flutter_app_gastos/screens/ajuste_cuentas.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 import 'package:flutter_app_gastos/widgets/groupCreatedDialog.dart';
 import 'package:intl/intl.dart';
@@ -100,7 +100,12 @@ class _GroupScreenState extends State<GroupScreen> {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Acción para ajustar cuentas
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AjustarCuentas(groupId: widget.groupId),
+                        ),
+                      );
                     },
                     child: Text('Ajustar cuentas'),
                   ),
