@@ -100,7 +100,7 @@ Future<List<Map<String, dynamic>>> ajustarDeudas(String groupId) async {
       deudores[j] = MapEntry(deudor, deudores[j].value + monto);
       acreedores[i] = MapEntry(acreedor, acreedores[i].value - monto);
 
-      if (deudores[j].value == 0) break;
+      if (deudores[j].value == 0 && acreedores[i].value == 0) break;
     }
   }
   
