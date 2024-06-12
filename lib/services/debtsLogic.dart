@@ -1,24 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
-Future<Map<String, double>> calcularDeudas(String groupId) async {
-  List<Gasto> gastos = await obtenerGastosDeGrupo(groupId);
-
-  Map<String, double> balances = {};
-
-  for (Gasto gasto in gastos) {
-    if (!gasto.paid) {
-      if (balances.containsKey(gasto.payer)) {
-        balances[gasto.payer] = balances[gasto.payer]! + gasto.amount;
-      } else {
-        balances[gasto.payer] = gasto.amount;
-      }
-    }
-  }
-
-  return balances;
-}
-
 Future<void> marcarGastosComoPagados(String groupId) async {
   try {
     DocumentReference grupoDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
@@ -41,7 +23,6 @@ Future<void> marcarGastosComoPagados(String groupId) async {
   }
 }
 
-
 Future<Map<String, double>> calcularBalances(String groupId) async {
   // Obtener los gastos del grupo
   List<Gasto> gastos = await obtenerGastosDeGrupo(groupId);
@@ -50,72 +31,84 @@ Future<Map<String, double>> calcularBalances(String groupId) async {
   DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
   List<String> miembros = List<String>.from(groupDoc['members'] ?? []);
 
+  // imprimir miembros por consola
+  print('Miembros del grupo: $miembros'); // Debugging line
+
   // Map para almacenar los gastos por persona
-  Map<String, double> gastosPorPersona = {};
+  Map<String, double> balance = {};
 
   // Calcular los gastos por persona
   for (Gasto gasto in gastos) {
     if (!gasto.paid) {
-      if (gastosPorPersona.containsKey(gasto.payer)) {
-        gastosPorPersona[gasto.payer] = gastosPorPersona[gasto.payer]! + gasto.amount;
+      if (balance.containsKey(gasto.payerId)) {
+        balance[gasto.payerId] = balance[gasto.payerId]! + gasto.amount;
       } else {
-        gastosPorPersona[gasto.payer] = gasto.amount;
+        balance[gasto.payerId] = gasto.amount;
       }
     }
   }
 
   // Incluir a todos los miembros, incluso si no han gastado nada
   for (String miembro in miembros) {
-    if (!gastosPorPersona.containsKey(miembro)) {
-      gastosPorPersona[miembro] = 0.0;
+    if (!balance.containsKey(miembro)) {
+      balance[miembro] = 0.0;
     }
   }
 
   // Calcular el total de gastos y el gasto equitativo por persona
-  double totalGastos = gastosPorPersona.values.fold(0, (sum, item) => sum + item);
+  double totalGastos = balance.values.fold(0, (sum, item) => sum + item);
   double gastoEquitativo = totalGastos / miembros.length;
 
   // Calcular los balances
   Map<String, double> balances = {};
   for (String miembro in miembros) {
-    double gastoPersona = gastosPorPersona[miembro] ?? 0.0;
+    double gastoPersona = balance[miembro] ?? 0.0;
     balances[miembro] = gastoPersona - gastoEquitativo;
   }
 
   return balances;
 }
 
-
-List<Map<String, dynamic>> ajustarDeudas(Map<String, double> balances) {
+Future<List<Map<String, dynamic>>> ajustarDeudas(String groupId) async {
+  print('Iniciando ajuste de deudas para el grupo $groupId'); // Debugging line
+  Map<String, double> balances = await calcularBalances(groupId);
   List<Map<String, dynamic>> deudas = [];
 
   // Listas para los que deben (deudores) y los que deben recibir (acreedores)
   List<MapEntry<String, double>> deudores = balances.entries.where((entry) => entry.value < 0).toList();
   List<MapEntry<String, double>> acreedores = balances.entries.where((entry) => entry.value > 0).toList();
 
-  int i = 0, j = 0;
+  print('Deudores: $deudores'); // Debugging line
+  print('Acreedores: $acreedores'); // Debugging line
 
-  while (i < deudores.length && j < acreedores.length) {
-    String deudor = deudores[i].key;
-    String acreedor = acreedores[j].key;
-    double deuda = deudores[i].value.abs();
-    double acreencia = acreedores[j].value;
+  for (int i = 0; i < acreedores.length; i++) {
+    String acreedor = acreedores[i].key;
+    double acreencia = acreedores[i].value;
 
-    double monto = deuda < acreencia ? deuda : acreencia;
+    for (int j = 0; j < deudores.length; j++) {
+      String deudor = deudores[j].key;
+      double deuda = deudores[j].value.abs();
 
-    deudas.add({
-      'deudor': deudor,
-      'acreedor': acreedor,
-      'monto': monto,
-    });
+      double monto = deuda < acreencia ? deuda : acreencia;
 
-    deudores[i] = MapEntry(deudor, deudores[i].value + monto);
-    acreedores[j] = MapEntry(acreedor, acreedores[j].value - monto);
+      deudas.add({
+        'deudor': deudor,
+        'acreedor': acreedor,
+        'monto': monto,
+      });
 
-    if (deudores[i].value == 0) i++;
-    if (acreedores[j].value == 0) j++;
+      deudores[j] = MapEntry(deudor, deudores[j].value + monto);
+      acreedores[i] = MapEntry(acreedor, acreedores[i].value - monto);
+
+      if (deudores[j].value == 0) break;
+    }
   }
-
+  
+  // Imprimir deudas por consola
+  for (Map<String, dynamic> deuda in deudas) {
+    print('${deuda['deudor']} le debe \$${deuda['monto']} a ${deuda['acreedor']}');
+  }
+  print('Ajuste de deudas completado.'); // Debugging line
+  
   return deudas;
 }
-

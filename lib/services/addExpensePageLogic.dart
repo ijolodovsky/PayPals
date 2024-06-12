@@ -11,6 +11,7 @@ class Gasto {
   final Timestamp date;
   final String payer;
   final bool paid;
+  final String payerId;
 
   Gasto({
     required this.description,
@@ -18,6 +19,7 @@ class Gasto {
     required this.date,
     required this.payer,
     required this.paid,
+    required this.payerId,
   });
 
 }
@@ -33,6 +35,7 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
       date: Timestamp.now(),
       payer: userName,
       paid: false,
+      payerId: obtenerIdUsuarioActual(),
     );
 
     await grupoDocRef.update({
@@ -42,6 +45,7 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
         'date': nuevoGasto.date,
         'payer': nuevoGasto.payer,
         'paid': nuevoGasto.paid,
+        'payerId': nuevoGasto.payerId,
       }]),
     });
 
@@ -67,6 +71,7 @@ Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
           date: expense['date'],
           payer: expense['payer'],
           paid: expense['paid'] ?? false,
+          payerId: expense['payerId'],
         )).toList();
         return expenses;
       }

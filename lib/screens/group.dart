@@ -186,7 +186,7 @@ class _GroupScreenState extends State<GroupScreen> {
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 onPressed: copyToClipboard,
-                child: Icon(Icons.share),
+                child: Icon(Icons.copy),
               ),
             ),
           ),
