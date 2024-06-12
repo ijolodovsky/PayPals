@@ -7,6 +7,8 @@ import 'group.dart';
 import 'initial_page.dart';
 import 'package:flutter_app_gastos/widgets/joinGroupDialog.dart';
 import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
+import 'package:flutter_app_gastos/services/debtsLogic.dart';
+import 'ajustar_cuentas.dart';  // Importar AjustarCuentas
 
 class HomeScreen extends StatefulWidget {
   final String userName;
@@ -56,6 +58,14 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error al unirse al grupo: $e');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al unirse al grupo')));
     }
+  }
+
+  Future<void> _ajustarCuentas(String groupId) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AjustarCuentas(groupId: groupId)),
+    );
+    _reloadData(); // Recargar los datos después de ajustar las cuentas
   }
 
   @override
@@ -123,23 +133,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 return ListView.builder(
                   itemCount: groupDocs.length,
                   itemBuilder: (context, index) {
-                    final groupName = groupDocs[index]['groupName'];
-                    const amount = 150.0;
-                    const isDebt = true;
+                    final groupDoc = groupDocs[index];
+                    final groupName = groupDoc['groupName'];
+                    final groupId = groupDoc.id;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: GroupButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupDocs[index].id, groupName: groupName)),
-                          );
-                        },
-                        groupName: groupName,
-                        amount: amount,
-                        isDebt: isDebt,
-                      ),
+                    return FutureBuilder<double>(
+                      future: obtenerBalanceUsuario(FirebaseAuth.instance.currentUser!.uid, groupId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        }
+                        final balance = snapshot.data ?? 0.0;
+                        final isDebt = balance < 0;
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: GroupButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupId, groupName: groupName)),
+                              );
+                            },
+                            groupName: groupName,
+                            amount: balance.abs(),
+                            isDebt: isDebt,
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -153,15 +177,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            FloatingActionButton(
-              onPressed: () {
-                _reloadData();
-              },
-              backgroundColor: Theme.of(context).colorScheme.background,
-              mini: true,
-              tooltip: 'Actualizar grupos',
-              child: Icon(Icons.refresh),
-            ),
             SizedBox(width: 10),
             FloatingActionButton(
               onPressed: () async {

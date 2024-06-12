@@ -81,34 +81,39 @@ Future<List<Map<String, dynamic>>> ajustarDeudas(String groupId) async {
   print('Deudores: $deudores'); // Debugging line
   print('Acreedores: $acreedores'); // Debugging line
 
-  for (int i = 0; i < acreedores.length; i++) {
-    String acreedor = acreedores[i].key;
-    double acreencia = acreedores[i].value;
+  int i = 0, j = 0;
 
-    for (int j = 0; j < deudores.length; j++) {
-      String deudor = deudores[j].key;
-      double deuda = deudores[j].value.abs();
+  while (i < deudores.length && j < acreedores.length) {
+    String deudor = deudores[i].key;
+    String acreedor = acreedores[j].key;
+    double deuda = deudores[i].value.abs();
+    double acreencia = acreedores[j].value;
 
-      double monto = deuda < acreencia ? deuda : acreencia;
+    double monto = deuda < acreencia ? deuda : acreencia;
 
-      deudas.add({
-        'deudor': deudor,
-        'acreedor': acreedor,
-        'monto': monto,
-      });
+    deudas.add({
+      'deudor': deudor,
+      'acreedor': acreedor,
+      'monto': monto,
+    });
 
-      deudores[j] = MapEntry(deudor, deudores[j].value + monto);
-      acreedores[i] = MapEntry(acreedor, acreedores[i].value - monto);
+    deudores[i] = MapEntry(deudor, deudores[i].value + monto);
+    acreedores[j] = MapEntry(acreedor, acreedores[j].value - monto);
 
-      if (deudores[j].value == 0 && acreedores[i].value == 0) break;
-    }
+    if (deudores[i].value == 0) i++;
+    if (acreedores[j].value == 0) j++;
   }
-  
+
   // Imprimir deudas por consola
   for (Map<String, dynamic> deuda in deudas) {
     print('${deuda['deudor']} le debe \$${deuda['monto']} a ${deuda['acreedor']}');
   }
   print('Ajuste de deudas completado.'); // Debugging line
-  
+
   return deudas;
+}
+
+Future<double> obtenerBalanceUsuario(String userId, String groupId) async {
+  Map<String, double> balances = await calcularBalances(groupId);
+  return balances[userId] ?? 0.0;
 }

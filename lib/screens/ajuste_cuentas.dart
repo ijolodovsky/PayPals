@@ -39,8 +39,33 @@ class AjustarCuentas extends StatelessWidget {
                 String deudor = deudas[index]['deudor'];
                 String acreedor = deudas[index]['acreedor'];
                 double monto = deudas[index]['monto'];
-                return ListTile(
-                  title: Text('$deudor le debe \$${monto.toStringAsFixed(2)} a $acreedor'),
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text(deudor[0]),
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    title: Text(
+                      deudor,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'le debe \$${monto.toStringAsFixed(2)} a $acreedor',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                    trailing: CircleAvatar(
+                      child: Text(acreedor[0]),
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                    onTap: () {},
+                  ),
                 );
               },
             );

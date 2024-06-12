@@ -145,6 +145,7 @@ class _GroupScreenState extends State<GroupScreen> {
                                         title: expense.description,
                                         payer: expense.payer,
                                         amount: expense.amount,
+                                        paid: expense.paid,
                                       );
                                     }).toList(),
                                   ),
@@ -223,6 +224,7 @@ class ExpenseTile extends StatelessWidget {
   final String title;
   final String payer;
   final double amount;
+  final bool paid;
 
   ExpenseTile({
     required this.month,
@@ -230,6 +232,7 @@ class ExpenseTile extends StatelessWidget {
     required this.title,
     required this.payer,
     required this.amount,
+    required this.paid,
   });
 
   @override
@@ -272,6 +275,15 @@ class ExpenseTile extends StatelessWidget {
           '$payer \$${amount.toStringAsFixed(2)}',
           style: TextStyle(fontSize: 14),
         ),
+        trailing: paid
+            ? Icon(
+                Icons.check_circle,
+                color: Colors.green,
+              )
+            : Icon(
+                Icons.cancel,
+                color: Colors.red,
+              ),
       ),
     );
   }
