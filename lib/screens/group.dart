@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
 import 'package:flutter_app_gastos/screens/ajuste_cuentas.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
-import 'package:flutter_app_gastos/widgets/groupCreatedDialog.dart';
 import 'package:intl/intl.dart';
 import 'package:share/share.dart';
 
@@ -277,11 +276,11 @@ class ExpenseTile extends StatelessWidget {
         ),
         trailing: paid
             ? Icon(
-                Icons.check_circle,
+                Icons.price_check,
                 color: Colors.green,
               )
             : Icon(
-                Icons.cancel,
+                Icons.money_off,
                 color: Colors.red,
               ),
       ),
