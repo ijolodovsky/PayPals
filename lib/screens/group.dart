@@ -46,7 +46,7 @@ class _GroupScreenState extends State<GroupScreen> {
     final locale = Intl.getCurrentLocale();
     final formatter = DateFormat('MMM', locale);
     return formatter.format(fecha).toUpperCase();
-}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +112,7 @@ class _GroupScreenState extends State<GroupScreen> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: Colors.white, // Cambio de color del contenedor para gastos pagados
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
@@ -127,6 +127,7 @@ class _GroupScreenState extends State<GroupScreen> {
                               return Text('Error al obtener los gastos del grupo: ${snapshot.error}');
                             } else {
                               List<Gasto> expenses = snapshot.data ?? [];
+                              expenses.sort((a, b) => b.date.compareTo(a.date)); // Ordenar de más nuevo a más viejo
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
@@ -236,9 +237,11 @@ class ExpenseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final amountFormatted = NumberFormat('#,##0.00', 'es_ES').format(amount); // Formato de los decimales
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: paid ? Colors.grey[200] : Colors.white, // Cambio de color del contenedor dependiendo del estado de pago
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
@@ -271,18 +274,42 @@ class ExpenseTile extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          '$payer \$${amount.toStringAsFixed(2)}',
+          payer,
           style: TextStyle(fontSize: 14),
         ),
-        trailing: paid
-            ? Icon(
-                Icons.price_check,
-                color: Colors.green,
-              )
-            : Icon(
-                Icons.money_off,
-                color: Colors.red,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!paid) // Mostrar botones solo si el gasto no está pagado
+              IconButton(
+                icon: Icon(Icons.edit),
+                iconSize: 20,
+                color: Colors.grey[400],
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  // Lógica para editar el gasto
+                },
               ),
+            if (!paid)
+              IconButton(
+                icon: Icon(Icons.delete),
+                iconSize: 20,
+                color: Colors.grey[400],
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  // Lógica para eliminar el gasto
+                },
+              ),
+            Text(
+              '\$$amountFormatted',
+              style: TextStyle(
+                fontSize: 14, // Tamaño de fuente reducido
+                fontWeight: FontWeight.bold,
+                color: paid ? Colors.grey[800] : Colors.red,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
