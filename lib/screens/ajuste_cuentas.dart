@@ -38,11 +38,12 @@ class AjustarCuentas extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.handshake,
-                      size: 50,
+                    Container(
+                      width: 200,
+                      height: 200,
+                      padding: const EdgeInsets.all(30),
+                      child: Image.asset('assets/images/saldado.jpg'),
                     ),
-                    SizedBox(height: 10),
                     Text(
                       'Deudas entre Pals saldadas',
                       style: TextStyle(fontSize: 16),
