@@ -97,7 +97,7 @@ class AjustarCuentas extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await marcarGastosComoPagados(groupId);
-          Navigator.pop(context);
+          Navigator.pop(context, true);  // Pasar 'true' al pop para indicar que se saldaron las deudas
         },
         child: Icon(Icons.payment),
         tooltip: 'Pagar todo',

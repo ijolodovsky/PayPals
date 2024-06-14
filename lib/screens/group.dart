@@ -18,6 +18,7 @@ class GroupScreen extends StatefulWidget {
 
 class _GroupScreenState extends State<GroupScreen> {
   late Future<List<Gasto>> _expensesFuture;
+  double _totalUnpaidExpenses = 0.0;
 
   @override
   void initState() {
@@ -28,6 +29,15 @@ class _GroupScreenState extends State<GroupScreen> {
   void _reloadData() {
     setState(() {
       _expensesFuture = obtenerGastosDeGrupo(widget.groupId);
+      _calculateTotalUnpaidExpenses();
+    });
+  }
+
+  Future<void> _calculateTotalUnpaidExpenses() async {
+    List<Gasto> expenses = await obtenerGastosDeGrupo(widget.groupId);
+    double total = expenses.where((gasto) => !gasto.paid).fold(0.0, (sum, gasto) => sum + gasto.amount);
+    setState(() {
+      _totalUnpaidExpenses = total;
     });
   }
 
@@ -93,18 +103,20 @@ class _GroupScreenState extends State<GroupScreen> {
                 children: <Widget>[
                   SizedBox(height: 10),
                   DebtTile(
-                    debtor: 'Micaela',
-                    amount: 699.32,
+                    totalUnpaid: _totalUnpaidExpenses,
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => AjustarCuentas(groupId: widget.groupId),
                         ),
                       );
+                      if (result == true) {
+                        _reloadData();  // Recargar datos si se saldaron las deudas
+                      }
                     },
                     child: Text('Ajustar cuentas'),
                   ),
@@ -112,7 +124,7 @@ class _GroupScreenState extends State<GroupScreen> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white, // Cambio de color del contenedor para gastos pagados
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
@@ -127,7 +139,7 @@ class _GroupScreenState extends State<GroupScreen> {
                               return Text('Error al obtener los gastos del grupo: ${snapshot.error}');
                             } else {
                               List<Gasto> expenses = snapshot.data ?? [];
-                              expenses.sort((a, b) => b.date.compareTo(a.date)); // Ordenar de más nuevo a más viejo
+                              expenses.sort((a, b) => b.date.compareTo(a.date));
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
@@ -199,20 +211,44 @@ class _GroupScreenState extends State<GroupScreen> {
 }
 
 class DebtTile extends StatelessWidget {
-  final String debtor;
-  final double amount;
+  final double totalUnpaid;
 
-  DebtTile({
-    required this.debtor,
-    required this.amount,
-  });
+  DebtTile({required this.totalUnpaid});
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(
-        '$debtor te debe \$${amount.toStringAsFixed(2)}',
-        style: TextStyle(fontSize: 16),
+    return Container(
+      decoration: BoxDecoration(
+        color: totalUnpaid > 0 ? Colors.orange[100] : Colors.green[100],
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(
+            totalUnpaid > 0 ? Icons.warning : Icons.check_circle,
+            color: totalUnpaid > 0 ? Colors.orange : Colors.green,
+          ),
+          SizedBox(width: 10),
+          Text(
+            totalUnpaid > 0
+                ? 'Total de gastos no pagados: \$${totalUnpaid.toStringAsFixed(2)}'
+                : 'No hay gastos pendientes',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: totalUnpaid > 0 ? Colors.orange[800] : Colors.green[800],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -237,11 +273,11 @@ class ExpenseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final amountFormatted = NumberFormat('#,##0.00', 'es_ES').format(amount); // Formato de los decimales
+    final amountFormatted = NumberFormat('#,##0.00', 'es_ES').format(amount);
 
     return Container(
       decoration: BoxDecoration(
-        color: paid ? Colors.grey[200] : Colors.white, // Cambio de color del contenedor dependiendo del estado de pago
+        color: paid ? Colors.grey[200] : Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
@@ -280,7 +316,7 @@ class ExpenseTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!paid) // Mostrar botones solo si el gasto no está pagado
+            if (!paid)
               IconButton(
                 icon: Icon(Icons.edit),
                 iconSize: 20,
@@ -290,22 +326,11 @@ class ExpenseTile extends StatelessWidget {
                   // Lógica para editar el gasto
                 },
               ),
-            if (!paid)
-              IconButton(
-                icon: Icon(Icons.delete),
-                iconSize: 20,
-                color: Colors.grey[400],
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  // Lógica para eliminar el gasto
-                },
-              ),
             Text(
               '\$$amountFormatted',
               style: TextStyle(
-                fontSize: 14, // Tamaño de fuente reducido
-                fontWeight: FontWeight.bold,
-                color: paid ? Colors.grey[800] : Colors.red,
+                fontSize: 16,
+                color: paid ? Colors.green : Colors.red,
               ),
             ),
           ],
