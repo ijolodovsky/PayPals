@@ -33,42 +33,61 @@ class AjustarCuentas extends StatelessWidget {
             return Center(child: Text('Error al calcular las deudas: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             List<Map<String, dynamic>> deudas = snapshot.data!;
-            return ListView.builder(
-              itemCount: deudas.length,
-              itemBuilder: (context, index) {
-                String deudor = deudas[index]['deudor'];
-                String acreedor = deudas[index]['acreedor'];
-                double monto = deudas[index]['monto'];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(deudor[0]),
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
+            if (deudas.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.handshake,
+                      size: 50,
                     ),
-                    title: Text(
-                      deudor,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
+                    SizedBox(height: 10),
+                    Text(
+                      'Deudas entre Pals saldadas',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return ListView.builder(
+                itemCount: deudas.length,
+                itemBuilder: (context, index) {
+                  String deudor = deudas[index]['deudor'];
+                  String acreedor = deudas[index]['acreedor'];
+                  double monto = deudas[index]['monto'];
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        child: Text(deudor[0]),
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
                       ),
+                      title: Text(
+                        deudor,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'le debe \$${monto.toStringAsFixed(2)} a $acreedor',
+                        style: TextStyle(color: Colors.black54),
+                      ),
+                      trailing: CircleAvatar(
+                        child: Text(acreedor[0]),
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                      onTap: () {},
                     ),
-                    subtitle: Text(
-                      'le debe \$${monto.toStringAsFixed(2)} a $acreedor',
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                    trailing: CircleAvatar(
-                      child: Text(acreedor[0]),
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                    onTap: () {},
-                  ),
-                );
-              },
-            );
+                  );
+                },
+              );
+            }
           } else {
             return Center(child: Text('No hay deudas que ajustar.'));
           }
