@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
 import 'package:flutter_app_gastos/screens/ajuste_cuentas.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_app_gastos/services/firestoreService.dart';
 import 'package:intl/intl.dart';
 import 'package:share/share.dart';
 
@@ -58,6 +60,26 @@ class _GroupScreenState extends State<GroupScreen> {
     return formatter.format(fecha).toUpperCase();
   }
 
+  Future<List<String>> _fetchParticipants() async {
+    DocumentSnapshot<Map<String, dynamic>> groupDoc = await FirestoreService().getGroupDocument(widget.groupId);
+    if (groupDoc.exists && groupDoc.data()!.containsKey('members')) {
+      return List<String>.from(groupDoc.data()!['members']);
+    }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchParticipantsDetails() async {
+    List<String> participantIds = await _fetchParticipants();
+    List<Map<String, dynamic>> participantsDetails = [];
+    for (String userId in participantIds) {
+      DocumentSnapshot<Map<String, dynamic>> userDoc = await FirestoreService().getUserDocument(userId);
+      if (userDoc.exists) {
+        participantsDetails.add(userDoc.data()!);
+      }
+    }
+    return participantsDetails;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,6 +91,41 @@ class _GroupScreenState extends State<GroupScreen> {
           },
         ),
         title: Text("Grupo"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.group),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Container(
+                  height: 400,
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: _fetchParticipantsDetails(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error al cargar los participantes: ${snapshot.error}'));
+                      } else {
+                        List<Map<String, dynamic>> participants = snapshot.data ?? [];
+                        return ListView.builder(
+                          itemCount: participants.length,
+                          itemBuilder: (context, index) {
+                            Map<String, dynamic> participant = participants[index];
+                            return ListTile(
+                              title: Text(participant['userName']),
+                              subtitle: Text(participant['email']),
+                            );
+                          },
+                        );
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -102,9 +159,21 @@ class _GroupScreenState extends State<GroupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   SizedBox(height: 10),
-                  DebtTile(
-                    totalUnpaid: _totalUnpaidExpenses,
-                  ),
+                  if (_totalUnpaidExpenses > 0)
+                    DebtTile(
+                      totalUnpaid: _totalUnpaidExpenses,
+                    ),
+                  if (_totalUnpaidExpenses == 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text('No hay deuda pendiente', style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
@@ -115,9 +184,17 @@ class _GroupScreenState extends State<GroupScreen> {
                         ),
                       );
                       if (result == true) {
-                        _reloadData();  // Recargar datos si se saldaron las deudas
+                        _reloadData();
                       }
                     },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 40),
+                      textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
                     child: Text('Ajustar cuentas'),
                   ),
                   SizedBox(height: 20),
@@ -139,6 +216,14 @@ class _GroupScreenState extends State<GroupScreen> {
                               return Text('Error al obtener los gastos del grupo: ${snapshot.error}');
                             } else {
                               List<Gasto> expenses = snapshot.data ?? [];
+                              if (expenses.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'No hay gastos en el grupo',
+                                    style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
+                                  ),
+                                );
+                              }
                               expenses.sort((a, b) => b.date.compareTo(a.date));
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,35 +304,27 @@ class DebtTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: totalUnpaid > 0 ? Colors.orange[100] : Colors.green[100],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       padding: EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Icon(
-            totalUnpaid > 0 ? Icons.warning : Icons.check_circle,
-            color: totalUnpaid > 0 ? Colors.orange : Colors.green,
-          ),
-          SizedBox(width: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
           Text(
-            totalUnpaid > 0
-                ? 'Total de gastos no pagados: \$${totalUnpaid.toStringAsFixed(2)}'
-                : 'No hay gastos pendientes',
+            'Total de gastos pendientes:',
+            style: TextStyle(fontSize: 18),
+          ),
+          SizedBox(height: 10),
+          Text(
+            '\$$totalUnpaid',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: totalUnpaid > 0 ? Colors.orange[800] : Colors.green[800],
+              color: Colors.red,
             ),
           ),
+          SizedBox(height: 10),
         ],
       ),
     );
@@ -273,68 +350,97 @@ class ExpenseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final amountFormatted = NumberFormat('#,##0.00', 'es_ES').format(amount);
-
     return Container(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: paid ? Colors.grey[200] : Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        color: paid ? Colors.grey.shade200 : Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: Offset(0, 2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3),
           ),
         ],
+        borderRadius: BorderRadius.circular(10),
       ),
-      margin: EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              month,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+      child: Row(
+        children: <Widget>[
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.circular(10),
             ),
-            SizedBox(height: 1),
-            Text(
-              day,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              children: <Widget>[
+                Text(
+                  month,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  day,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 1),
-          ],
-        ),
-        title: Text(
-          title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          payer,
-          style: TextStyle(fontSize: 14),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!paid)
-              IconButton(
-                icon: Icon(Icons.edit),
-                iconSize: 20,
-                color: Colors.grey[400],
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  // Lógica para editar el gasto
-                },
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Pagado por: $payer',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              Text(
+                '\$$amount',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: paid ? Colors.green : Colors.red,
+                ),
               ),
-            Text(
-              '\$$amountFormatted',
-              style: TextStyle(
-                fontSize: 16,
-                color: paid ? Colors.green : Colors.red,
-              ),
+              if (!paid)
+                Text(
+                  'No pagado',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.red,
+                  ),
+                ),
+            ],
+          ),
+          if (!paid)
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                // fncionalidad de edición
+              },
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
