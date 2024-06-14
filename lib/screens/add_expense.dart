@@ -28,10 +28,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     if (_validateAmount(_amountController.text)) {
       try {
-        await cargarGastoEnGrupo(widget.groupId, description, amount);
+        String result = await cargarGastoEnGrupo(widget.groupId, description, amount);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
         Navigator.pop(context);
       } catch (error) {
         print('Error al agregar el gasto: $error');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al agregar el gasto')));
       }
     }
   }

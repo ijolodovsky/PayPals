@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
 
 
 FirebaseFirestore _firestore = FirebaseFirestore.instance;
 FirebaseAuthService _authService = FirebaseAuthService();
+FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
 class Gasto {
   final String description;
@@ -39,22 +42,55 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
     );
 
     await grupoDocRef.update({
-      'expenses': FieldValue.arrayUnion([{
-        'description': nuevoGasto.description,
-        'amount': nuevoGasto.amount,
-        'date': nuevoGasto.date,
-        'payer': nuevoGasto.payer,
-        'paid': nuevoGasto.paid,
-        'payerId': nuevoGasto.payerId,
-      }]),
+      'expenses': FieldValue.arrayUnion([
+        {
+          'description': nuevoGasto.description,
+          'amount': nuevoGasto.amount,
+          'date': nuevoGasto.date,
+          'payer': nuevoGasto.payer,
+          'paid': nuevoGasto.paid,
+          'payerId': nuevoGasto.payerId,
+        }
+      ]),
     });
 
+    //await notificarNuevoGasto(grupoDocRef.id, nuevoGasto.description, nuevoGasto.amount);
     return 'Gasto agregado correctamente';
   } catch (error) {
     print('Error al cargar el gasto en el grupo: $error');
     rethrow;
   }
 }
+
+Future<void> notificarNuevoGasto(String groupId, String description, double amount) async {
+  DocumentSnapshot grupoDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
+  List<String> miembros = List<String>.from(grupoDoc['members']);
+
+  for (String miembroId in miembros) {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(miembroId).get();
+    String? fcmToken = userDoc['fcmToken'];
+
+    if (fcmToken != null) {
+      await _sendPushNotification(fcmToken, description, amount);
+    }
+  }
+}
+
+Future<void> _sendPushNotification(String fcmToken, String description, double amount) async {
+  try {
+    await _firebaseMessaging.sendMessage(
+      to: fcmToken,
+      data: {
+        'title': 'Nuevo gasto',
+        'body': 'Se ha agregado un nuevo gasto de $amount€: $description',
+      },
+    );
+    print('Notificación enviada exitosamente');
+  } catch (e) {
+    print('Error al enviar la notificación: $e');
+  }
+}
+
 
 Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
   try {
