@@ -7,7 +7,6 @@ import 'group.dart';
 import 'initial_page.dart';
 import 'package:flutter_app_gastos/widgets/joinGroupDialog.dart';
 import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
-import 'package:flutter_app_gastos/services/debtsLogic.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userName;
@@ -21,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final FirestoreService _firestoreService = FirestoreService();
   late Future<List<DocumentSnapshot<Map<String, dynamic>>>> _groupDocuments;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -30,32 +30,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _reloadData() {
     setState(() {
-      _groupDocuments = _firestoreService.getUserDocument(FirebaseAuth.instance.currentUser!.uid)
+      isLoading = true;
+      _groupDocuments = _firestoreService
+          .getUserDocument(FirebaseAuth.instance.currentUser!.uid)
           .then((userDoc) {
         final List<String> groupIds = List<String>.from(userDoc['grupos']);
-        return Future.wait(groupIds.map((groupId) => _firestoreService.getGroupDocument(groupId)));
+        return Future.wait(
+            groupIds.map((groupId) => _firestoreService.getGroupDocument(groupId)));
+      }).whenComplete(() {
+        setState(() {
+          isLoading = false;
+        });
       });
     });
   }
 
   Future<void> _joinGroup(String groupId) async {
     try {
-      // Verifica si el grupo existe en Firestore
-      DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
+      DocumentSnapshot groupDoc =
+          await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
 
       if (groupDoc.exists) {
-        // Si el grupo existe, agrégalo al usuario
         await agregarGrupoAlUsuario(groupId);
         await agregarUsuarioAlGrupo(groupId);
         _reloadData();
       } else {
-        // Si el grupo no existe, muestra un mensaje de error
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('El grupo no existe')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('El grupo no existe')));
       }
     } catch (e) {
-      // Manejar el error si no se puede unir al grupo
       print('Error al unirse al grupo: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al unirse al grupo')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error al unirse al grupo')));
     }
   }
 
@@ -128,33 +134,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     final groupName = groupDoc['groupName'];
                     final groupId = groupDoc.id;
 
-                    return FutureBuilder<double>(
-                      future: obtenerBalanceUsuario(FirebaseAuth.instance.currentUser!.uid, groupId),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                        if (snapshot.hasError) {
-                          return Center(child: Text('Error: ${snapshot.error}'));
-                        }
-                        final balance = snapshot.data ?? 0.0;
-                        final isDebt = balance < 0;
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: GroupButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupId, groupName: groupName)),
-                              );
-                            },
-                            groupName: groupName,
-                            amount: balance.abs(),
-                            isDebt: isDebt,
-                          ),
-                        );
-                      },
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: GroupButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupId, groupName: groupName)),
+                          );
+                        },
+                        groupName: groupName,
+                        amount: 0.0, // Se muestra un valor de cantidad fijo por ahora
+                        isDebt: false, // Se muestra como no deuda por ahora
+                      ),
                     );
                   },
                 );
@@ -235,7 +227,7 @@ class GroupButton extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.circle, // Change icon based on preference
+            Icons.circle,
             color: isDebt ? Colors.red : Colors.green,
           ),
           SizedBox(width: 10),
