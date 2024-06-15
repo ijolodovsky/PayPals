@@ -157,7 +157,6 @@ class _GroupScreenState extends State<GroupScreen> {
           ),
         ],
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +246,13 @@ class _GroupScreenState extends State<GroupScreen> {
                                   ),
                                 );
                               }
-                              expenses.sort((a, b) => b.date.compareTo(a.date));
+                              // Ordenar los gastos
+                              expenses.sort((a, b) {
+                                if (a.paid != b.paid) {
+                                  return a.paid ? 1 : -1;
+                                }
+                                return b.date.compareTo(a.date);
+                              });
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
@@ -428,7 +433,8 @@ class ExpenseTile extends StatelessWidget {
                   'Pagado por: $payer',
                   style: TextStyle(
                     fontSize: 16,
-                    color: paid ? Colors.grey[600] : Colors.black,),
+                    color: paid ? Colors.grey[600] : Colors.black,
+                  ),
                 ),
               ],
             ),
@@ -442,7 +448,7 @@ class ExpenseTile extends StatelessWidget {
                     iconSize: MaterialStateProperty.all(14),     
                   ),
                   onPressed: () {
-                    // fncionalidad de edición
+                    // funcionalidad de edición
                   },
               ),
           Column(

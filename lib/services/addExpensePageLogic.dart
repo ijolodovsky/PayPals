@@ -27,7 +27,7 @@ class Gasto {
 
 }
 
-Future<String> cargarGastoEnGrupo(String groupId, String description, double amount) async {
+Future<String> cargarGastoEnGrupo(String groupId, String description, double amount, DateTime date) async {
   try {
     DocumentReference grupoDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
     String userName = await _authService.getUserName(obtenerIdUsuarioActual()) ?? 'Usuario desconocido';
@@ -35,7 +35,7 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
     Gasto nuevoGasto = Gasto(
       description: description,
       amount: amount,
-      date: Timestamp.now(),
+      date: Timestamp.fromDate(date), // Convertimos DateTime a Timestamp para incluir fecha y hora
       payer: userName,
       paid: false,
       payerId: obtenerIdUsuarioActual(),
@@ -54,7 +54,6 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
       ]),
     });
 
-    //await notificarNuevoGasto(grupoDocRef.id, nuevoGasto.description, nuevoGasto.amount);
     return 'Gasto agregado correctamente';
   } catch (error) {
     print('Error al cargar el gasto en el grupo: $error');

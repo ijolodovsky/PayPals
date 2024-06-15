@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
+import 'package:intl/intl.dart'; // Asegúrate de agregar esta dependencia en tu pubspec.yaml
 
 class AddExpenseScreen extends StatefulWidget {
   final String groupId;
@@ -13,6 +14,7 @@ class AddExpenseScreen extends StatefulWidget {
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
+  DateTime? _selectedDate;
 
   bool _validateAmount(String value) {
     if (value.isEmpty) {
@@ -22,19 +24,42 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return amount != null && amount > 0;
   }
 
+  bool _validateDescription(String value) {
+    return value.isNotEmpty;
+  }
+
   void _addExpense() async {
     final description = _descriptionController.text;
-    final amount = double.parse(_amountController.text);
+    final amountText = _amountController.text;
 
-    if (_validateAmount(_amountController.text)) {
+    if (_validateDescription(description) &&
+        _validateAmount(amountText) &&
+        _selectedDate != null) {
+      final amount = double.parse(amountText);
       try {
-        String result = await cargarGastoEnGrupo(widget.groupId, description, amount);
+        String result = await cargarGastoEnGrupo(widget.groupId, description, amount, _selectedDate!);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
         Navigator.pop(context);
       } catch (error) {
         print('Error al agregar el gasto: $error');
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al agregar el gasto')));
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Por favor complete todos los campos correctamente')));
+    }
+  }
+
+  void _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(), // Establece la fecha actual como la última fecha seleccionable
+    );
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate = pickedDate;
+      });
     }
   }
 
@@ -58,7 +83,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               controller: _descriptionController,
               decoration: InputDecoration(
                 hintText: 'Descripción del gasto',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+                contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
               ),
             ),
             SizedBox(height: 20),
@@ -73,13 +103,55 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               decoration: InputDecoration(
                 hintText: 'Monto',
                 prefixText: '\$',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+                contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
               ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _addExpense,
-              child: Text('Añadir Gasto'),
+            Text(
+              'Fecha:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate == null
+                        ? 'Seleccione una fecha'
+                        : DateFormat('dd/MM/yyyy').format(_selectedDate!),
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: Text('Seleccionar Fecha'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: _addExpense,
+                child: Text('Añadir Gasto'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
