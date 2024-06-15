@@ -99,27 +99,57 @@ class _GroupScreenState extends State<GroupScreen> {
                 context: context,
                 builder: (context) => Container(
                   height: 400,
-                  child: FutureBuilder<List<Map<String, dynamic>>>(
-                    future: _fetchParticipantsDetails(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error al cargar los participantes: ${snapshot.error}'));
-                      } else {
-                        List<Map<String, dynamic>> participants = snapshot.data ?? [];
-                        return ListView.builder(
-                          itemCount: participants.length,
-                          itemBuilder: (context, index) {
-                            Map<String, dynamic> participant = participants[index];
-                            return ListTile(
-                              title: Text(participant['userName']),
-                              subtitle: Text(participant['email']),
-                            );
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: FutureBuilder<List<Map<String, dynamic>>>(
+                          future: _fetchParticipantsDetails(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Center(child: Text('Error al cargar los participantes: ${snapshot.error}'));
+                            } else {
+                              List<Map<String, dynamic>> participants = snapshot.data ?? [];
+                              return ListView.builder(
+                                itemCount: participants.length,
+                                itemBuilder: (context, index) {
+                                  Map<String, dynamic> participant = participants[index];
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
+                                      child: Text(
+                                        participant['userName']
+                                            .toString()
+                                            .substring(0, 1)
+                                            .toUpperCase(),
+                                      ),
+                                    ),
+                                    title: Text(participant['userName']),
+                                    subtitle: Text(participant['email']),
+                                  );
+                                },
+                              );
+                            }
                           },
-                        );
-                      }
-                    },
+                        ),
+                      ),
+                      SizedBox(height: 15),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Lógica para abandonar el grupo
+                          // Por ejemplo, podrías llamar a un método que maneje esto
+                          // _leaveGroup();
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(Colors.red),
+                          padding: MaterialStateProperty.all(EdgeInsets.all(16)),
+                        ),
+                        child: Text('Abandonar Grupo', style: TextStyle(color: Colors.white)),
+                      ),
+                      SizedBox(height: 10),
+                    ],
                   ),
                 ),
               );
@@ -127,6 +157,7 @@ class _GroupScreenState extends State<GroupScreen> {
           ),
         ],
       ),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +201,7 @@ class _GroupScreenState extends State<GroupScreen> {
                         children: [
                           Icon(Icons.check_circle, color: Colors.green),
                           SizedBox(width: 8),
-                          Text('No hay deuda pendiente', style: TextStyle(fontSize: 16)),
+                          Text('Todos los gastos fueron saldados', style: TextStyle(fontSize: 18)),
                         ],
                       ),
                     ),
@@ -187,14 +218,6 @@ class _GroupScreenState extends State<GroupScreen> {
                         _reloadData();
                       }
                     },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 40),
-                      textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
                     child: Text('Ajustar cuentas'),
                   ),
                   SizedBox(height: 20),
@@ -312,7 +335,7 @@ class DebtTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Total de gastos pendientes:',
+            'Total de gastos sin ajustar:',
             style: TextStyle(fontSize: 18),
           ),
           SizedBox(height: 10),
@@ -324,7 +347,6 @@ class DebtTile extends StatelessWidget {
               color: Colors.red,
             ),
           ),
-          SizedBox(height: 10),
         ],
       ),
     );
@@ -368,10 +390,6 @@ class ExpenseTile extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Container(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(10),
-            ),
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Column(
               children: <Widget>[
@@ -379,7 +397,7 @@ class ExpenseTile extends StatelessWidget {
                   month,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white,
+                    color: paid ? Colors.grey[600] : Colors.blue,
                   ),
                 ),
                 Text(
@@ -387,7 +405,7 @@ class ExpenseTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: paid ? Colors.grey[600] : Colors.blue,
                   ),
                 ),
               ],
@@ -403,15 +421,30 @@ class ExpenseTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: paid ? Colors.grey[600] : Colors.black,
                   ),
                 ),
                 Text(
                   'Pagado por: $payer',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: paid ? Colors.grey[600] : Colors.black,),
                 ),
               ],
             ),
           ),
+          if (!paid)
+                IconButton(
+                  icon: Icon(Icons.edit),
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all(EdgeInsets.all(0)),
+                    iconColor: MaterialStateProperty.all(Colors.grey[600]),    
+                    iconSize: MaterialStateProperty.all(14),     
+                  ),
+                  onPressed: () {
+                    // fncionalidad de edición
+                  },
+              ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
@@ -420,12 +453,12 @@ class ExpenseTile extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: paid ? Colors.green : Colors.red,
+                  color: paid ? Colors.grey[600] : Colors.red,
                 ),
               ),
               if (!paid)
                 Text(
-                  'No pagado',
+                  'Sin saldar',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.red,
@@ -433,13 +466,6 @@ class ExpenseTile extends StatelessWidget {
                 ),
             ],
           ),
-          if (!paid)
-            IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () {
-                // fncionalidad de edición
-              },
-            ),
         ],
       ),
     );
