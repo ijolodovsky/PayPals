@@ -38,6 +38,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       final amount = double.parse(amountText);
       try {
         String result = await cargarGastoEnGrupo(widget.groupId, description, amount, _selectedDate!);
+        await notificarNuevoGasto(widget.groupId, description, amount); // Llamar a la función de notificación
+
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
         Navigator.pop(context);
       } catch (error) {

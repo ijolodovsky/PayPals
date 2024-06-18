@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_gastos/services/FirestoreService.dart';
 
 import '../user_auth/firebase_user_authentication/fire_auth_services.dart';
 import 'home_page.dart';
@@ -90,6 +92,12 @@ class _LoginPageState extends State<LoginPage> {
       if (user != null) {
         String? userName = await _authService.getUserName(user.uid);
         if (userName != null) {
+          // Guardar el FCM Token
+          String? token = await FirebaseMessaging.instance.getToken();
+          if (token != null) {
+            await saveTokenToDatabase(token);
+          }
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => HomeScreen(userName: userName)),

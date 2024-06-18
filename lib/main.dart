@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/screens/initial_page.dart';
+import 'package:flutter_app_gastos/services/FirestoreService.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -76,7 +77,7 @@ class MyAppState extends ChangeNotifier {
       String? token = await messaging.getToken();
       print("FCM Token: $token");
       // Here, save the token to your database
-
+      await saveTokenToDatabase(token!);
       // Configure the foreground message handler
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         print("Got a message whilst in the foreground!");

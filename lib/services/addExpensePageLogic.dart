@@ -2,11 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
-
+import 'package:flutter_app_gastos/services/notificationService.dart';
 
 FirebaseFirestore _firestore = FirebaseFirestore.instance;
 FirebaseAuthService _authService = FirebaseAuthService();
 FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+NotificationService _notificationService = NotificationService();
 
 class Gasto {
   final String description;
@@ -24,7 +25,6 @@ class Gasto {
     required this.paid,
     required this.payerId,
   });
-
 }
 
 Future<String> cargarGastoEnGrupo(String groupId, String description, double amount, DateTime date) async {
@@ -54,6 +54,9 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
       ]),
     });
 
+    // Notificar a los miembros del grupo sobre el nuevo gasto
+    await notificarNuevoGasto(groupId, description, amount);
+
     return 'Gasto agregado correctamente';
   } catch (error) {
     print('Error al cargar el gasto en el grupo: $error');
@@ -70,26 +73,10 @@ Future<void> notificarNuevoGasto(String groupId, String description, double amou
     String? fcmToken = userDoc['fcmToken'];
 
     if (fcmToken != null) {
-      await _sendPushNotification(fcmToken, description, amount);
+      await _notificationService.sendNotification(amount, description, fcmToken);
     }
   }
 }
-
-Future<void> _sendPushNotification(String fcmToken, String description, double amount) async {
-  try {
-    await _firebaseMessaging.sendMessage(
-      to: fcmToken,
-      data: {
-        'title': 'Nuevo gasto',
-        'body': 'Se ha agregado un nuevo gasto de $amount€: $description',
-      },
-    );
-    print('Notificación enviada exitosamente');
-  } catch (e) {
-    print('Error al enviar la notificación: $e');
-  }
-}
-
 
 Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
   try {

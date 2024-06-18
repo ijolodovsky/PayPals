@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_gastos/services/FirestoreService.dart';
 
 import '../user_auth/firebase_user_authentication/fire_auth_services.dart';
 import 'home_page.dart';
@@ -130,6 +132,12 @@ class _RegistroPageState extends State<RegistroPage> {
       try {
         User? user = await _authService.signUpWithEmailAndPassword(email, password, username);
         if (user != null) {
+          // Guardar el FCM Token
+          String? token = await FirebaseMessaging.instance.getToken();
+          if (token != null) {
+            await saveTokenToDatabase(token);
+          }
+
           print('Usuario registrado con éxito: ${user.uid}');
           Navigator.pushReplacement(
             context,
