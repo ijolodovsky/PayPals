@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
 import 'package:flutter_app_gastos/screens/ajuste_cuentas.dart';
+import 'package:flutter_app_gastos/screens/edit_expense.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_gastos/services/firestoreService.dart';
@@ -265,6 +266,9 @@ class _GroupScreenState extends State<GroupScreen> {
                                     children: expenses.map((expense) {
                                       DateTime date = expense.date.toDate();
                                       return ExpenseTile(
+                                        id: expense.id,
+                                        groupId: widget.groupId,
+                                        payerId: expense.payerId,
                                         month: obtenerNombreMesAbreviado(date),
                                         day: date.day.toString(),
                                         title: expense.description,
@@ -279,7 +283,7 @@ class _GroupScreenState extends State<GroupScreen> {
                             }
                           },
                         ),
-                      ],
+                      ],                      
                     ),
                   ),
                 ],
@@ -359,20 +363,26 @@ class DebtTile extends StatelessWidget {
 }
 
 class ExpenseTile extends StatelessWidget {
+  final String id;
   final String month;
   final String day;
   final String title;
   final String payer;
   final double amount;
   final bool paid;
+  final String payerId;
+  final String groupId;
 
   ExpenseTile({
+    required this.id,
     required this.month,
     required this.day,
     required this.title,
     required this.payer,
     required this.amount,
     required this.paid,
+    required this.payerId,
+    required this.groupId,
   });
 
   @override
@@ -448,7 +458,25 @@ class ExpenseTile extends StatelessWidget {
                     iconSize: MaterialStateProperty.all(14),     
                   ),
                   onPressed: () {
-                    // funcionalidad de edición
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditExpenseScreen(
+                          groupId: groupId,
+                          expense: Gasto(
+                            id: id,
+                            date: Timestamp.now(),
+                            description: title,
+                            amount: amount,
+                            paid: paid,
+                            payer: payer,
+                            payerId: payerId,
+                          ),
+                        ),
+                      ),
+                    ).then((_) {
+                      // Actualizar la lista de gastos
+                    });
                   },
               ),
           Column(

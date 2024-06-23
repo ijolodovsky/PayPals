@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_gastos/services/FirestoreService.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
 
 
@@ -9,6 +13,7 @@ FirebaseAuthService _authService = FirebaseAuthService();
 FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
 class Gasto {
+  final String id;
   final String description;
   final double amount;
   final Timestamp date;
@@ -17,6 +22,7 @@ class Gasto {
   final String payerId;
 
   Gasto({
+    required this.id,
     required this.description,
     required this.amount,
     required this.date,
@@ -26,40 +32,43 @@ class Gasto {
   });
 
 }
-
 Future<String> cargarGastoEnGrupo(String groupId, String description, double amount, DateTime date) async {
-  try {
-    DocumentReference grupoDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
-    String userName = await _authService.getUserName(obtenerIdUsuarioActual()) ?? 'Usuario desconocido';
+    try {
+      String userId = obtenerIdUsuarioActual();
+      String userName = await getUserName(userId);
 
-    Gasto nuevoGasto = Gasto(
-      description: description,
-      amount: amount,
-      date: Timestamp.fromDate(date), // Convertimos DateTime a Timestamp para incluir fecha y hora
-      payer: userName,
-      paid: false,
-      payerId: obtenerIdUsuarioActual(),
-    );
+      CollectionReference expenseCollection = _firestore.collection('expenses');
 
-    await grupoDocRef.update({
-      'expenses': FieldValue.arrayUnion([
-        {
-          'description': nuevoGasto.description,
-          'amount': nuevoGasto.amount,
-          'date': nuevoGasto.date,
-          'payer': nuevoGasto.payer,
-          'paid': nuevoGasto.paid,
-          'payerId': nuevoGasto.payerId,
-        }
-      ]),
-    });
+      Gasto nuevoGasto = Gasto(
+        id: '',
+        description: description,
+        amount: amount,
+        date: Timestamp.fromDate(date),
+        payer: userName,
+        paid: false,
+        payerId: userId, // Aquí debes obtener el ID del usuario actual
+      );
 
-    return 'Gasto agregado correctamente';
-  } catch (error) {
-    print('Error al cargar el gasto en el grupo: $error');
-    rethrow;
+      DocumentReference nuevaExpenseRef = await expenseCollection.add({
+        'description': nuevoGasto.description,
+        'amount': nuevoGasto.amount,
+        'date': nuevoGasto.date,
+        'payer': nuevoGasto.payer,
+        'paid': nuevoGasto.paid,
+        'payerId': nuevoGasto.payerId,
+      });
+
+      // Actualizamos el documento del grupo para agregar el ID del gasto al array 'expenses'
+      await _firestore.collection('grupos').doc(groupId).update({
+        'expenses': FieldValue.arrayUnion([nuevaExpenseRef.id]),
+      });
+
+      return 'Gasto agregado correctamente';
+    } catch (error) {
+      print('Error al cargar el gasto en el grupo: $error');
+      rethrow;
+    }
   }
-}
 
 Future<void> notificarNuevoGasto(String groupId, String description, double amount) async {
   DocumentSnapshot grupoDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
@@ -93,21 +102,31 @@ Future<void> _sendPushNotification(String fcmToken, String description, double a
 
 Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
   try {
+    print('Obteniendo gastos del grupo $groupId');
     DocumentSnapshot grupoDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
+    CollectionReference expenseCollection = FirebaseFirestore.instance.collection('expenses');
 
     if (grupoDoc.exists) {
       Map<String, dynamic>? grupoData = grupoDoc.data() as Map<String, dynamic>?;
 
       if (grupoData != null && grupoData.containsKey('expenses')) {
         List<dynamic> expensesData = grupoData['expenses'] ?? [];
-        List<Gasto> expenses = expensesData.map((expense) => Gasto(
-          description: expense['description'],
-          amount: expense['amount'],
-          date: expense['date'],
-          payer: expense['payer'],
-          paid: expense['paid'] ?? false,
-          payerId: expense['payerId'],
-        )).toList();
+        //por cada id ir a buscar a la collection expenses la informacion del grupo y añadirlo a la lista de gastos
+        List<Gasto> expenses = [];
+        for (var expenseId in expensesData) {
+          DocumentSnapshot expenseDoc = await expenseCollection.doc(expenseId).get();
+          if (expenseDoc.exists) {
+            expenses.add(Gasto(
+              id: expenseDoc.id,
+              description: expenseDoc['description'],
+              amount: expenseDoc['amount'],
+              date: expenseDoc['date'],
+              payer: expenseDoc['payer'],
+              paid: expenseDoc['paid'],
+              payerId: expenseDoc['payerId'],
+            ));
+          }
+        }
         return expenses;
       }
     }

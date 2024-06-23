@@ -13,7 +13,7 @@ Future<String> crearGrupoEnFirestore(String groupName, String description) async
     DocumentReference nuevoGrupoRef = await gruposCollection.add({
       'groupName': groupName,
       'description': description,
-      'expenses': <Gasto>[],
+      'expenses': <String>[],
       'members': <String>[obtenerIdUsuarioActual()],
     });
 
