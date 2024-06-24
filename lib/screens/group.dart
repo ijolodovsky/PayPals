@@ -139,8 +139,7 @@ class _GroupScreenState extends State<GroupScreen> {
                       SizedBox(height: 15),
                       ElevatedButton(
                         onPressed: () {
-                          // Lógica para abandonar el grupo
-                          // Por ejemplo, podrías llamar a un método que maneje esto
+                          // lógica para abandonar el grupo
                           // _leaveGroup();
                         },
                         style: ButtonStyle(
@@ -275,6 +274,29 @@ class _GroupScreenState extends State<GroupScreen> {
                                         payer: expense.payer,
                                         amount: expense.amount,
                                         paid: expense.paid,
+                                        onEdit: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => EditExpenseScreen(
+                                                groupId: widget.groupId,
+                                                expense: Gasto(
+                                                  id: expense.id,
+                                                  date: Timestamp.now(),
+                                                  description: expense.description,
+                                                  amount: expense.amount,
+                                                  paid: expense.paid,
+                                                  payer: expense.payer,
+                                                  payerId: expense.payerId,
+                                                ),
+                                              ),
+                                            ),
+                                          ).then((result) {
+                                            if (result == true) {
+                                              _reloadData(); // Call _reloadData if the result is true
+                                            }
+                                          });
+                                        },
                                       );
                                     }).toList(),
                                   ),
@@ -372,6 +394,7 @@ class ExpenseTile extends StatelessWidget {
   final bool paid;
   final String payerId;
   final String groupId;
+  final VoidCallback onEdit;
 
   ExpenseTile({
     required this.id,
@@ -383,6 +406,7 @@ class ExpenseTile extends StatelessWidget {
     required this.paid,
     required this.payerId,
     required this.groupId,
+    required this.onEdit,
   });
 
   @override
@@ -450,35 +474,15 @@ class ExpenseTile extends StatelessWidget {
             ),
           ),
           if (!paid)
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  style: ButtonStyle(
-                    padding: MaterialStateProperty.all(EdgeInsets.all(0)),
-                    iconColor: MaterialStateProperty.all(Colors.grey[600]),    
-                    iconSize: MaterialStateProperty.all(14),     
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditExpenseScreen(
-                          groupId: groupId,
-                          expense: Gasto(
-                            id: id,
-                            date: Timestamp.now(),
-                            description: title,
-                            amount: amount,
-                            paid: paid,
-                            payer: payer,
-                            payerId: payerId,
-                          ),
-                        ),
-                      ),
-                    ).then((_) {
-                      // Actualizar la lista de gastos
-                    });
-                  },
+            IconButton(
+              icon: Icon(Icons.edit),
+              style: ButtonStyle(
+                padding: MaterialStateProperty.all(EdgeInsets.all(0)),
+                iconColor: MaterialStateProperty.all(Colors.grey[600]),    
+                iconSize: MaterialStateProperty.all(14),     
               ),
+              onPressed: onEdit,
+            ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
