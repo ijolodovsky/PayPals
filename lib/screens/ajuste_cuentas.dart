@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_gastos/services/FirestoreService.dart';
+import 'package:flutter_app_gastos/services/FirestoreService.dart' as fs;
 import 'package:flutter_app_gastos/services/debtsLogic.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AjustarCuentas extends StatelessWidget {
   final String groupId;
-  final String groupName; // Asumiendo que tienes el nombre del grupo
+  final String groupName;
 
   AjustarCuentas({required this.groupId, required this.groupName});
 
@@ -13,8 +13,8 @@ class AjustarCuentas extends StatelessWidget {
     List<Map<String, dynamic>> deudas = await ajustarDeudas(groupId);
 
     for (var deuda in deudas) {
-      deuda['deudor'] = await getUserName(deuda['deudor']);
-      deuda['acreedor'] = await getUserName(deuda['acreedor']);
+      deuda['deudor'] = await fs.getUserName(deuda['deudor']);
+      deuda['acreedor'] = await fs.getUserName(deuda['acreedor']);
     }
 
     return deudas;
@@ -22,9 +22,14 @@ class AjustarCuentas extends StatelessWidget {
 
   Future<void> _shareOnWhatsApp(List<Map<String, dynamic>> deudas) async {
     String message = 'Hola, Pals!\n\nRecuerden que todavía deben ajustar sus cuentas de $groupName:\n';
-    
+
     for (var deuda in deudas) {
-      message += '- ${deuda['deudor']} le debe \$${deuda['monto'].toStringAsFixed(2)} a ${deuda['acreedor']}\n';
+      String montoFormateado = '\$${deuda['monto'].toStringAsFixed(2)}'.replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (Match match) => '${match[1]},',
+      );
+
+      message += '- ${deuda['deudor']} le debe $montoFormateado a ${deuda['acreedor']}\n';
     }
 
     message += '\n¡Desde la app pueden ver los gastos y marcarlos como saldados!';
@@ -120,7 +125,7 @@ class AjustarCuentas extends StatelessWidget {
           FloatingActionButton(
             onPressed: () async {
               await marcarGastosComoPagados(groupId);
-              Navigator.pop(context, true);  // Pasar 'true' al pop para indicar que se saldaron las deudas
+              Navigator.pop(context, true);
             },
             tooltip: 'Gastos saldados',
             child: Icon(Icons.check),

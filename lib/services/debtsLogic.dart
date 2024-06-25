@@ -26,8 +26,6 @@ Future<void> marcarGastosComoPagados(String groupId) async {
   }
 }
 
-
-
 Future<Map<String, double>> calcularBalances(String groupId) async {
   // Obtener los gastos del grupo
   List<Gasto> gastos = await obtenerGastosDeGrupo(groupId);
@@ -102,23 +100,47 @@ Future<List<Map<String, dynamic>>> ajustarDeudas(String groupId) async {
       'monto': monto,
     });
 
-    deudores[i] = MapEntry(deudor, deudores[i].value + monto);
-    acreedores[j] = MapEntry(acreedor, acreedores[j].value - monto);
-
-    if (deudores[i].value == 0) i++;
-    if (acreedores[j].value == 0) j++;
+    if (deuda < acreencia) {
+      acreedores[j] = MapEntry(acreedor, acreencia - deuda);
+      i++;
+    } else if (deuda > acreencia) {
+      deudores[i] = MapEntry(deudor, -(deuda - acreencia));
+      j++;
+    } else {
+      i++;
+      j++;
+    }
   }
 
-  // Imprimir deudas por consola
-  for (Map<String, dynamic> deuda in deudas) {
-    print('${deuda['deudor']} le debe \$${deuda['monto']} a ${deuda['acreedor']}');
-  }
-  print('Ajuste de deudas completado.'); // Debugging line
-
+  print('Deudas calculadas: $deudas'); // Debugging line
   return deudas;
 }
 
-Future<double> obtenerBalanceUsuario(String userId, String groupId) async {
+Future<Map<String, double>> obtenerBalanceUsuario(String userId, String groupId) async {
   Map<String, double> balances = await calcularBalances(groupId);
-  return balances[userId] ?? 0.0;
+  double balance = balances[userId] ?? 0.0;
+  double totalDeuda = 0.0;
+  double totalAcreedor = 0.0;
+
+  // Calcular total de deudas y créditos del usuario
+  for (var entry in balances.entries) {
+    if (entry.key == userId) {
+      if (entry.value < 0) {
+        totalDeuda += entry.value.abs();
+      } else if (entry.value > 0) {
+        totalAcreedor += entry.value;
+      }
+    }
+  }
+
+  return {
+    'balance': balance,
+    'totalDeuda': totalDeuda,
+    'totalAcreedor': totalAcreedor,
+  };
+}
+
+Future<String> getUserName(String userId) async {
+  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+  return userDoc['name'];
 }

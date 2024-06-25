@@ -2,11 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/services/FirestoreService.dart';
-import 'add_group.dart';
-import 'group.dart';
-import 'initial_page.dart';
+import 'package:flutter_app_gastos/screens/add_group.dart';
+import 'package:flutter_app_gastos/screens/group.dart';
+import 'package:flutter_app_gastos/screens/initial_page.dart';
 import 'package:flutter_app_gastos/widgets/joinGroupDialog.dart';
 import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
+import 'package:flutter_app_gastos/services/debtsLogic.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userName;
@@ -63,6 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error al unirse al grupo')));
     }
+  }
+
+  Future<Map<String, double>> _getUserBalance(String groupId) async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    return obtenerBalanceUsuario(userId, groupId);
   }
 
   @override
@@ -134,19 +140,47 @@ class _HomeScreenState extends State<HomeScreen> {
                     final groupName = groupDoc['groupName'];
                     final groupId = groupDoc.id;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: GroupButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupId, groupName: groupName)),
+                    return FutureBuilder<Map<String, double>>(
+                      future: _getUserBalance(groupId),
+                      builder: (context, balanceSnapshot) {
+                        if (balanceSnapshot.connectionState == ConnectionState.waiting) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Center(
+                              child: CircularProgressIndicator(),
+                            ),
                           );
-                        },
-                        groupName: groupName,
-                        amount: 0.0, // Se muestra un valor de cantidad fijo por ahora
-                        isDebt: false, // Se muestra como no deuda por ahora
-                      ),
+                        }
+                        if (balanceSnapshot.hasError) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Center(
+                              child: Text('Error: ${balanceSnapshot.error}'),
+                            ),
+                          );
+                        }
+                        final balance = balanceSnapshot.data!;
+                        final double userBalance = balance['balance']!;
+                        final bool isDebt = userBalance < 0;
+                        final bool isEmpty = userBalance == 0;
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: GroupButton(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupId, groupName: groupName)),
+                              );
+                              _reloadData();
+                            },
+                            groupName: groupName,
+                            amount: userBalance.abs(),
+                            isEmpty: isEmpty,
+                            isDebt: isDebt,
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -205,12 +239,14 @@ class GroupButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String groupName;
   final double amount;
+  final bool isEmpty;
   final bool isDebt;
 
   GroupButton({
     required this.onPressed,
     required this.groupName,
     required this.amount,
+    required this.isEmpty,
     required this.isDebt,
   });
 
@@ -235,10 +271,16 @@ class GroupButton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(groupName),
-              Text(
-                isDebt ? 'Debes \$${amount.toStringAsFixed(2)}' : 'Te deben \$${amount.toStringAsFixed(2)}',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              if (isEmpty)
+                Text(
+                  'No hay gastos',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
+              else
+                Text(
+                  isDebt ? 'Debes \$${amount.toStringAsFixed(2)}' : 'Te deben \$${amount.toStringAsFixed(2)}',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
             ],
           ),
         ],
