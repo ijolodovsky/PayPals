@@ -15,6 +15,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   DateTime? _selectedDate;
+  String? _selectedCategory;
+
+  final List<String> _categories = [
+    'Comida',
+    'Transporte',
+    'Alojamiento',
+    'Entretenimiento',
+    'Otros',
+  ];
 
   bool _validateAmount(String value) {
     if (value.isEmpty) {
@@ -34,10 +43,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     if (_validateDescription(description) &&
         _validateAmount(amountText) &&
-        _selectedDate != null) {
+        _selectedDate != null &&
+        _selectedCategory != null) {
       final amount = double.parse(amountText);
       try {
-        String result = await cargarGastoEnGrupo(widget.groupId, description, amount, _selectedDate!);
+        String result = await cargarGastoEnGrupo(widget.groupId, description, amount, _selectedDate!, _selectedCategory!);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
         Navigator.pop(context);
       } catch (error) {
@@ -139,6 +149,35 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ),
                 ),
               ],
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Categoría:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              hint: Text('Seleccione una categoría'),
+              items: _categories.map((String category) {
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedCategory = newValue;
+                });
+              },
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+                contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+              ),
             ),
             SizedBox(height: 20),
             Center(

@@ -3,25 +3,30 @@ import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
 Future<void> marcarGastosComoPagados(String groupId) async {
   try {
+    // Obtener el documento del grupo
     DocumentReference grupoDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
     DocumentSnapshot grupoDoc = await grupoDocRef.get();
 
     if (grupoDoc.exists) {
-      List<dynamic> expenses = grupoDoc['expenses'];
-      List<dynamic> updatedExpenses = expenses.map((expense) {
-        if (!expense['paid']) {
-          expense['paid'] = true;
-        }
-        return expense;
-      }).toList();
+      List<dynamic> expenseIds = grupoDoc['expenses'];
 
-      await grupoDocRef.update({'expenses': updatedExpenses});
+      // Recorrer cada ID de gasto y actualizar el campo 'paid' a true
+      for (String expenseId in expenseIds) {
+        DocumentReference expenseDocRef = FirebaseFirestore.instance.collection('expenses').doc(expenseId);
+        DocumentSnapshot expenseDoc = await expenseDocRef.get();
+
+        if (expenseDoc.exists && !expenseDoc['paid']) {
+          await expenseDocRef.update({'paid': true});
+        }
+      }
     }
   } catch (error) {
     print('Error al marcar los gastos como pagados: $error');
     rethrow;
   }
 }
+
+
 
 Future<Map<String, double>> calcularBalances(String groupId) async {
   // Obtener los gastos del grupo

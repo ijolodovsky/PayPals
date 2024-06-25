@@ -20,6 +20,15 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   late TextEditingController _amountController;
   late DateTime _selectedDate;
   bool _isPaid = false;
+  String? _selectedCategory;
+
+  final List<String> _categories = [
+    'Comida',
+    'Transporte',
+    'Alojamiento',
+    'Entretenimiento',
+    'Otros',
+  ];
 
   @override
   void initState() {
@@ -28,6 +37,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     _amountController = TextEditingController(text: widget.expense.amount.toString());
     _selectedDate = widget.expense.date.toDate();
     _isPaid = widget.expense.paid;
+    _selectedCategory = widget.expense.category;
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -44,7 +54,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   }
 
   void _updateExpense() {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _selectedCategory != null) {
       Gasto updatedExpense = Gasto(
         id: widget.expense.id,
         date: Timestamp.fromDate(_selectedDate),
@@ -53,6 +63,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         paid: _isPaid,
         payer: widget.expense.payer, 
         payerId: widget.expense.payerId,
+        category: _selectedCategory!,  // Ensure the selected category is passed
       );
 
       FirestoreService().actualizarGasto(widget.groupId, widget.expense.id, updatedExpense).then((_) {
@@ -62,6 +73,10 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
           SnackBar(content: Text('Error al actualizar el gasto: $error')),
         );
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor completa todos los campos correctamente')),
+      );
     }
   }
 
@@ -166,6 +181,41 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                     ),
                   ),
                 ],
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Categoría:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                hint: Text('Seleccione una categoría'),
+                items: _categories.map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                  });
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor selecciona una categoría';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               Row(

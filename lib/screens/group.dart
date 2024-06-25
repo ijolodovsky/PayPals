@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
 import 'package:flutter_app_gastos/screens/ajuste_cuentas.dart';
+import 'package:flutter_app_gastos/screens/charts.dart' as charts;
 import 'package:flutter_app_gastos/screens/edit_expense.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -155,6 +156,17 @@ class _GroupScreenState extends State<GroupScreen> {
               );
             },
           ),
+          IconButton(
+            icon: Icon(Icons.pie_chart),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => charts.ExpensesChartScreen(groupId: widget.groupId),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -288,6 +300,7 @@ class _GroupScreenState extends State<GroupScreen> {
                                                   paid: expense.paid,
                                                   payer: expense.payer,
                                                   payerId: expense.payerId,
+                                                  category: expense.category,
                                                 ),
                                               ),
                                             ),

@@ -21,6 +21,8 @@ dependencies:
   share: ^2.0.4
   intl: ^0.17.0
   firebase_messaging: ^14.9.4
+  pie_chart: ^5.0.0
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:

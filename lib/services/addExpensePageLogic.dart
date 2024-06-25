@@ -20,6 +20,7 @@ class Gasto {
   final String payer;
   final bool paid;
   final String payerId;
+  final String category;
 
   Gasto({
     required this.id,
@@ -29,10 +30,11 @@ class Gasto {
     required this.payer,
     required this.paid,
     required this.payerId,
+    required this.category,
   });
 
 }
-Future<String> cargarGastoEnGrupo(String groupId, String description, double amount, DateTime date) async {
+Future<String> cargarGastoEnGrupo(String groupId, String description, double amount, DateTime date, String category) async {
     try {
       String userId = obtenerIdUsuarioActual();
       String userName = await getUserName(userId);
@@ -47,6 +49,7 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
         payer: userName,
         paid: false,
         payerId: userId, // Aquí debes obtener el ID del usuario actual
+        category: category,
       );
 
       DocumentReference nuevaExpenseRef = await expenseCollection.add({
@@ -56,6 +59,7 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
         'payer': nuevoGasto.payer,
         'paid': nuevoGasto.paid,
         'payerId': nuevoGasto.payerId,
+        'category': nuevoGasto.category,
       });
 
       // Actualizamos el documento del grupo para agregar el ID del gasto al array 'expenses'
@@ -124,6 +128,7 @@ Future<List<Gasto>> obtenerGastosDeGrupo(String groupId) async {
               payer: expenseDoc['payer'],
               paid: expenseDoc['paid'],
               payerId: expenseDoc['payerId'],
+              category: expenseDoc['category'],
             ));
           }
         }

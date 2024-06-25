@@ -25,6 +25,7 @@ class FirestoreService {
       'paid': updatedExpense.paid,
       'payer': updatedExpense.payer,
       'payerId': updatedExpense.payerId,
+      'category': updatedExpense.category,
     });
   }
 
