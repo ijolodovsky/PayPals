@@ -284,7 +284,7 @@ class GroupButton extends StatelessWidget {
               Text(groupName),
               if (isEmpty)
                 Text(
-                  'No hay gastos',
+                  'Gastos saldados o balanceados',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 )
               else

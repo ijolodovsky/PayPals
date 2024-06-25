@@ -342,6 +342,7 @@ class _GroupScreenState extends State<GroupScreen> {
                   _reloadData();
                 });
               },
+              tooltip: 'Agregar gasto',
               child: Icon(Icons.add),
             ),
           ),
@@ -351,6 +352,7 @@ class _GroupScreenState extends State<GroupScreen> {
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 onPressed: copyToClipboard,
+                tooltip: 'Copar código de grupo',
                 child: Icon(Icons.copy),
               ),
             ),
