@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/services/FirestoreService.dart';
 import 'package:flutter_app_gastos/services/debtsLogic.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AjustarCuentas extends StatelessWidget {
   final String groupId;
+  final String groupName; // Asumiendo que tienes el nombre del grupo
 
-  AjustarCuentas({required this.groupId});
+  AjustarCuentas({required this.groupId, required this.groupName});
 
   Future<List<Map<String, dynamic>>> _obtenerDeudasConNombres(String groupId) async {
     List<Map<String, dynamic>> deudas = await ajustarDeudas(groupId);
@@ -16,6 +18,24 @@ class AjustarCuentas extends StatelessWidget {
     }
 
     return deudas;
+  }
+
+  Future<void> _shareOnWhatsApp(List<Map<String, dynamic>> deudas) async {
+    String message = 'Hola, Pals!\n\nRecuerden que todavía deben ajustar sus cuentas de $groupName:\n';
+    
+    for (var deuda in deudas) {
+      message += '- ${deuda['deudor']} le debe \$${deuda['monto'].toStringAsFixed(2)} a ${deuda['acreedor']}\n';
+    }
+
+    message += '\n¡Desde la app pueden ver los gastos y marcarlos como saldados!';
+
+    final whatsappUrl = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+
+    if (await canLaunch(whatsappUrl.toString())) {
+      await launch(whatsappUrl.toString());
+    } else {
+      throw 'Could not launch WhatsApp';
+    }
   }
 
   @override
@@ -94,13 +114,27 @@ class AjustarCuentas extends StatelessWidget {
           }
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await marcarGastosComoPagados(groupId);
-          Navigator.pop(context, true);  // Pasar 'true' al pop para indicar que se saldaron las deudas
-        },
-        child: Icon(Icons.payment),
-        tooltip: 'Pagar todo',
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
+              await marcarGastosComoPagados(groupId);
+              Navigator.pop(context, true);  // Pasar 'true' al pop para indicar que se saldaron las deudas
+            },
+            tooltip: 'Gastos saldados',
+            child: Icon(Icons.check),
+          ),
+          SizedBox(height: 10),
+          FloatingActionButton(
+            onPressed: () async {
+              List<Map<String, dynamic>> deudas = await _obtenerDeudasConNombres(groupId);
+              _shareOnWhatsApp(deudas);
+            },
+            tooltip: 'Compartir en WhatsApp',
+            child: Icon(Icons.share),
+          ),
+        ],
       ),
     );
   }

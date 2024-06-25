@@ -222,7 +222,7 @@ class _GroupScreenState extends State<GroupScreen> {
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AjustarCuentas(groupId: widget.groupId),
+                          builder: (context) => AjustarCuentas(groupId: widget.groupId, groupName: widget.groupName),
                         ),
                       );
                       if (result == true) {
