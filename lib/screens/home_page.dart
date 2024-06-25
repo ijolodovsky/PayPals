@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_gastos/services/FirestoreService.dart';
 import 'package:flutter_app_gastos/screens/add_group.dart';
 import 'package:flutter_app_gastos/screens/group.dart';
@@ -75,7 +75,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('PayPals'),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo1.png',
+              height: 30,
+              width: 30,
+              fit: BoxFit.contain,
+            ),
+            SizedBox(width: 10),
+            Text('PayPals'),
+          ],
+        ),
         automaticallyImplyLeading: false,
         actions: [
           PopupMenuButton(
