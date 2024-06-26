@@ -5,8 +5,10 @@ import 'package:flutter_app_gastos/screens/ajuste_cuentas.dart';
 import 'package:flutter_app_gastos/screens/charts.dart' as charts;
 import 'package:flutter_app_gastos/screens/edit_expense.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
+import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_gastos/services/firestoreService.dart';
+import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
 import 'package:intl/intl.dart';
 import 'package:share/share.dart';
 
@@ -82,6 +84,23 @@ class _GroupScreenState extends State<GroupScreen> {
     return participantsDetails;
   }
 
+  Future<void> _leaveGroup() async {
+    String userId = obtenerIdUsuarioActual();
+    List<Gasto> expenses = await obtenerGastosDeGrupo(widget.groupId);
+    bool userHasExpenses = expenses.any((expense) => expense.payerId == userId);
+
+    if (!userHasExpenses) {
+      await FirestoreService().removeUserFromGroup(widget.groupId, userId);
+      await FirestoreService().removeGroupFromUser(widget.groupId, userId);
+      Navigator.pop(context);
+      _reloadData(); // Actualizar datos después de abandonar el grupo
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No puedes abandonar el grupo porque tienes gastos asociados.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,10 +158,7 @@ class _GroupScreenState extends State<GroupScreen> {
                       ),
                       SizedBox(height: 15),
                       ElevatedButton(
-                        onPressed: () {
-                          // lógica para abandonar el grupo
-                          // _leaveGroup();
-                        },
+                        onPressed: _leaveGroup,
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(Colors.red),
                           padding: MaterialStateProperty.all(EdgeInsets.all(16)),
@@ -352,7 +368,7 @@ class _GroupScreenState extends State<GroupScreen> {
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 onPressed: copyToClipboard,
-                tooltip: 'Copar código de grupo',
+                tooltip: 'Copiar código de grupo',
                 child: Icon(Icons.copy),
               ),
             ),
@@ -491,11 +507,6 @@ class ExpenseTile extends StatelessWidget {
           if (!paid)
             IconButton(
               icon: Icon(Icons.edit),
-              style: ButtonStyle(
-                padding: MaterialStateProperty.all(EdgeInsets.all(0)),
-                iconColor: MaterialStateProperty.all(Colors.grey[600]),    
-                iconSize: MaterialStateProperty.all(14),     
-              ),
               onPressed: onEdit,
             ),
           Column(

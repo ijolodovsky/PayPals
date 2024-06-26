@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
+import 'package:flutter_app_gastos/services/firestoreService.dart'; // Asegúrate de que esta línea está presente
 
 FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -25,6 +26,7 @@ Future<String> crearGrupoEnFirestore(String groupName, String description) async
     rethrow;
   }
 }
+
 Future<void> agregarGrupoAlUsuario(String groupId) async {
   try {
     String userId = obtenerIdUsuarioActual();
@@ -40,7 +42,7 @@ Future<void> agregarGrupoAlUsuario(String groupId) async {
       }
     }
 
-    // Agregamos el nuevo grupo a la lista (si no esta presente)
+    // Agregamos el nuevo grupo a la lista (si no está presente)
     if (!grupos.contains(groupId)) {
       grupos.add(groupId);
     }
@@ -60,22 +62,34 @@ Future<void> agregarUsuarioAlGrupo(String groupId) async {
     String userId = obtenerIdUsuarioActual();
     DocumentReference groupDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
 
-    // Obtenemos la lista actual de grupos del usuario (si existe)
+    // Obtenemos la lista actual de miembros del grupo (si existe)
     DocumentSnapshot groupDoc = await groupDocRef.get();
     List<String> miembros = [];
     if (groupDoc.exists) {
       //obtener lista de miembros
       miembros = List<String>.from(groupDoc['members']);
-      if(!miembros.contains(userId)){
+      if (!miembros.contains(userId)) {
         miembros.add(userId);
       }
-      // Actualizamos solo la lista de grupos del usuario
+      // Actualizamos solo la lista de miembros del grupo
       await groupDocRef.set({
         'members': miembros,
       }, SetOptions(merge: true));
     }
   } catch (e) {
-    print('Error al usuario al grupo: $e');
+    print('Error al agregar el usuario al grupo: $e');
+    rethrow;
+  }
+}
+
+Future<void> abandonarGrupo(String groupId) async {
+  try {
+    String userId = obtenerIdUsuarioActual();
+    FirestoreService firestoreService = FirestoreService();
+    await firestoreService.removeUserFromGroup(groupId, userId);
+    await firestoreService.removeGroupFromUser(groupId, userId);
+  } catch (e) {
+    print('Error al abandonar el grupo: $e');
     rethrow;
   }
 }
