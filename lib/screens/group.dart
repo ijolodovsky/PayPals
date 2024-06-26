@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_gastos/screens/add_expense.dart';
+import 'package:flutter_app_gastos/screens/home_page.dart';
 import 'package:flutter_app_gastos/screens/ajuste_cuentas.dart';
 import 'package:flutter_app_gastos/screens/charts.dart' as charts;
 import 'package:flutter_app_gastos/screens/edit_expense.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
-import 'package:flutter_app_gastos/services/addGroupPageLogic.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_gastos/services/firestoreService.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
@@ -92,13 +92,24 @@ class _GroupScreenState extends State<GroupScreen> {
     if (!userHasExpenses) {
       await FirestoreService().removeUserFromGroup(widget.groupId, userId);
       await FirestoreService().removeGroupFromUser(widget.groupId, userId);
-      Navigator.pop(context);
-      _reloadData(); // Actualizar datos después de abandonar el grupo
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No puedes abandonar el grupo porque tienes gastos asociados.')),
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => HomeScreen(userName: widget.groupName)),
+        (Route<dynamic> route) => false,
       );
+    } else {
+      _showSnackBar('No puedes abandonar el grupo porque tienes gastos asociados.');
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -274,7 +285,6 @@ class _GroupScreenState extends State<GroupScreen> {
                                   ),
                                 );
                               }
-                              // Ordenar los gastos
                               expenses.sort((a, b) {
                                 if (a.paid != b.paid) {
                                   return a.paid ? 1 : -1;
@@ -322,7 +332,7 @@ class _GroupScreenState extends State<GroupScreen> {
                                             ),
                                           ).then((result) {
                                             if (result == true) {
-                                              _reloadData(); // Call _reloadData if the result is true
+                                              _reloadData();
                                             }
                                           });
                                         },
