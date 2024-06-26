@@ -139,8 +139,3 @@ Future<Map<String, double>> obtenerBalanceUsuario(String userId, String groupId)
     'totalAcreedor': totalAcreedor,
   };
 }
-
-Future<String> getUserName(String userId) async {
-  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-  return userDoc['name'];
-}

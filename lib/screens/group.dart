@@ -11,6 +11,7 @@ import 'package:flutter_app_gastos/services/firestoreService.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
 import 'package:intl/intl.dart';
 import 'package:share/share.dart';
+import 'package:flutter_app_gastos/services/debtsLogic.dart';
 
 class GroupScreen extends StatefulWidget {
   final String groupId;
@@ -86,19 +87,20 @@ class _GroupScreenState extends State<GroupScreen> {
 
   Future<void> _leaveGroup() async {
     String userId = obtenerIdUsuarioActual();
-    List<Gasto> expenses = await obtenerGastosDeGrupo(widget.groupId);
-    bool userHasExpenses = expenses.any((expense) => expense.payerId == userId);
 
-    if (!userHasExpenses) {
+    List<Map<String, dynamic>> deudas = await ajustarDeudas(widget.groupId);
+    bool userHasNoDebts = deudas.every((deuda) => deuda['deudor'] != userId && deuda['acreedor'] != userId);
+
+    if (userHasNoDebts) {
       await FirestoreService().removeUserFromGroup(widget.groupId, userId);
       await FirestoreService().removeGroupFromUser(widget.groupId, userId);
-
+      String userName = await getUserName(userId);
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => HomeScreen(userName: widget.groupName)),
+        MaterialPageRoute(builder: (context) => HomeScreen(userName: userName)),
         (Route<dynamic> route) => false,
       );
     } else {
-      _showSnackBar('No puedes abandonar el grupo porque tienes gastos asociados.');
+      _showSnackBar('No puedes abandonar el grupo porque tienes deudas pendientes.');
     }
   }
 

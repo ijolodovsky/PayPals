@@ -34,32 +34,61 @@ class FirestoreService {
     });
   }
 
-  Future<void> removeUserFromGroup(String groupId, String userId) async {
+Future<void> removeUserFromGroup(String groupId, String userId) async {
     DocumentReference groupDocRef = _firestore.collection('grupos').doc(groupId);
-    DocumentSnapshot groupDoc = await groupDocRef.get();
+    
+    try {
+      DocumentSnapshot groupDoc = await groupDocRef.get();
 
-    if (groupDoc.exists) {
-      List<String> miembros = List<String>.from(groupDoc['members']);
-      if (miembros.contains(userId)) {
-        miembros.remove(userId);
-        await groupDocRef.update({'members': miembros});
+      if (groupDoc.exists) {
+        var groupData = groupDoc.data() as Map<String, dynamic>;
+        if (groupData.containsKey('members')) {
+          List<String> miembros = List<String>.from(groupData['members']);
+          if (miembros.contains(userId)) {
+            miembros.remove(userId);
+            await groupDocRef.update({'members': miembros});
+          }
+        } else {
+          // Handle the case where 'members' field does not exist
+          print('El campo "members" no existe en el documento del grupo.');
+        }
+      } else {
+        print('El documento del grupo no existe.');
       }
+    } catch (e) {
+      print('Error al actualizar los miembros del grupo: $e');
     }
   }
 
   Future<void> removeGroupFromUser(String groupId, String userId) async {
     DocumentReference userDocRef = _firestore.collection('users').doc(userId);
-    DocumentSnapshot userDoc = await userDocRef.get();
+    
+    try {
+      DocumentSnapshot userDoc = await userDocRef.get();
 
-    if (userDoc.exists) {
-      List<String> grupos = List<String>.from(userDoc['grupos']);
-      if (grupos.contains(groupId)) {
-        grupos.remove(groupId);
-        await userDocRef.update({'grupos': grupos});
+      if (userDoc.exists) {
+        var userData = userDoc.data() as Map<String, dynamic>;
+        if (userData.containsKey('grupos')) {
+          List<String> grupos = List<String>.from(userData['grupos']);
+          if (grupos.contains(groupId)) {
+            grupos.remove(groupId);
+            await userDocRef.update({'grupos': grupos});
+          }
+        } else {
+          // Handle the case where 'grupos' field does not exist
+          print('El campo "grupos" no existe en el documento del usuario.');
+        }
+      } else {
+        print('El documento del usuario no existe.');
       }
+    } catch (e) {
+      print('Error al actualizar los grupos del usuario: $e');
     }
   }
 }
+
+
+
 
 Future<String> getUserName(String userId) async {
   final FirestoreService _firestoreService = FirestoreService();

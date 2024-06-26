@@ -3,6 +3,7 @@ import 'package:flutter_app_gastos/services/FirestoreService.dart' as fs;
 import 'package:flutter_app_gastos/services/debtsLogic.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
 class AjustarCuentas extends StatelessWidget {
   final String groupId;
   final String groupName;
