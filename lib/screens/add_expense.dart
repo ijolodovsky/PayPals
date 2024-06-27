@@ -22,6 +22,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     'Transporte',
     'Alojamiento',
     'Entretenimiento',
+    'Salud',
+    'Hogar',
+    'SUBE',
+    'Compras',
+    'Educación',
+    'Ropa',
     'Otros',
   ];
 

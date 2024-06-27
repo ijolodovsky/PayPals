@@ -87,7 +87,24 @@ Future<void> removeUserFromGroup(String groupId, String userId) async {
   }
 
   Future<void> deleteGroup(String groupId) async {
-    return _firestore.collection('grupos').doc(groupId).delete();
+
+  DocumentReference groupDocRef = _firestore.collection('grupos').doc(groupId);
+
+  WriteBatch batch = _firestore.batch();
+
+  batch.delete(groupDocRef);
+
+  DocumentSnapshot groupDoc = await groupDocRef.get();
+
+  if (groupDoc.exists) {
+    List<dynamic> expensesIds = groupDoc['expenses'];
+    for (String expenseId in expensesIds) {
+      DocumentReference expenseDocRef = _firestore.collection('expenses').doc(expenseId);
+      batch.delete(expenseDocRef);
+    }
+  }
+
+  await batch.commit();
   }
 
  
