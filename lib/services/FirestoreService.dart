@@ -85,6 +85,12 @@ Future<void> removeUserFromGroup(String groupId, String userId) async {
       print('Error al actualizar los grupos del usuario: $e');
     }
   }
+
+  Future<void> deleteGroup(String groupId) async {
+    return _firestore.collection('grupos').doc(groupId).delete();
+  }
+
+ 
 }
 
 

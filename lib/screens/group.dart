@@ -84,14 +84,61 @@ class _GroupScreenState extends State<GroupScreen> {
     }
     return participantsDetails;
   }
+Future<void> _leaveGroup() async {
+  String userId = obtenerIdUsuarioActual();
 
-  Future<void> _leaveGroup() async {
-    String userId = obtenerIdUsuarioActual();
+  List<Map<String, dynamic>> deudas = await ajustarDeudas(widget.groupId);
+  bool userHasNoDebts = deudas.every((deuda) => deuda['deudor'] != userId && deuda['acreedor'] != userId);
 
-    List<Map<String, dynamic>> deudas = await ajustarDeudas(widget.groupId);
-    bool userHasNoDebts = deudas.every((deuda) => deuda['deudor'] != userId && deuda['acreedor'] != userId);
+  if (userHasNoDebts) {
+    List<String> participantes = await _fetchParticipants();
+    if (participantes.length == 1 && participantes.contains(userId)) {
+      // Mostrar diálogo para elegir entre abandonar y eliminar el grupo o solo abandonar
+      bool? delete = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Salir del grupo'),
+            content: Text('Eres el último miembro del grupo. ¿Deseas abandonar y eliminar el grupo o solo abandonar?'),
+            actions: [
+              TextButton(
+                child: Text('Cancelar'),
+                onPressed: () {
+                  Navigator.of(context).pop(null); // Devolver null para indicar cancelación
+                },
+              ),
+              TextButton(
+                child: Text('Abandonar y eliminar grupo'),
+                onPressed: () {
+                  Navigator.of(context).pop(true); // Confirmar eliminar grupo
+                },
+              ),
+              TextButton(
+                child: Text('Solo abandonar'),
+                onPressed: () {
+                  Navigator.of(context).pop(false); // Confirmar solo abandonar
+                },
+              ),
+            ],
+          );
+        },
+      );
 
-    if (userHasNoDebts) {
+      if (delete != null) {
+        if (delete) {
+          await FirestoreService().deleteGroup(widget.groupId);
+        }
+
+        // Solo abandona el grupo si no se eliminó completamente
+        await FirestoreService().removeUserFromGroup(widget.groupId, userId);
+        await FirestoreService().removeGroupFromUser(widget.groupId, userId);
+        String userName = await getUserName(userId);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => HomeScreen(userName: userName)),
+          (Route<dynamic> route) => false,
+        );
+      }
+    } else {
       await FirestoreService().removeUserFromGroup(widget.groupId, userId);
       await FirestoreService().removeGroupFromUser(widget.groupId, userId);
       String userName = await getUserName(userId);
@@ -99,10 +146,30 @@ class _GroupScreenState extends State<GroupScreen> {
         MaterialPageRoute(builder: (context) => HomeScreen(userName: userName)),
         (Route<dynamic> route) => false,
       );
-    } else {
-      _showSnackBar('No puedes abandonar el grupo porque tienes deudas pendientes.');
     }
+  } else {
+    // Mostrar modal con mensaje de deudas pendientes
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('No puedes abandonar el grupo'),
+          content: Text('Tienes deudas pendientes en este grupo.'),
+          actions: [
+            TextButton(
+              child: Text('Aceptar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el modal
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
+}
+
+
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -522,26 +589,26 @@ class ExpenseTile extends StatelessWidget {
               onPressed: onEdit,
             ),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Text(
+              NumberFormat.currency(locale: 'es_AR', symbol: '\$').format(amount),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: paid ? Colors.grey[600] : Colors.red,
+              ),
+            ),
+            if (!paid)
               Text(
-                '\$$amount',
+                'Sin saldar',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: paid ? Colors.grey[600] : Colors.red,
+                  fontSize: 14,
+                  color: Colors.red,
                 ),
               ),
-              if (!paid)
-                Text(
-                  'Sin saldar',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.red,
-                  ),
-                ),
-            ],
-          ),
+          ],
+        ),
         ],
       ),
     );
