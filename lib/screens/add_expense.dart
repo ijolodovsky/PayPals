@@ -73,6 +73,23 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
   }
 
+  IconData getIconForCategory(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'comida':
+        return Icons.fastfood;
+      case 'transporte':
+        return Icons.directions_car;
+      case 'entretenimiento':
+        return Icons.local_movies;
+      case 'salud':
+        return Icons.favorite;
+      case 'alojamiento':
+        return Icons.hotel;
+      default:
+        return Icons.category;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,13 +157,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () => _selectDate(context),
-                  child: Text('Seleccionar Fecha'),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
+                  child: Text('Seleccionar Fecha'),
                 ),
               ],
             ),
@@ -156,40 +173,53 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              hint: Text('Seleccione una categoría'),
-              items: _categories.map((String category) {
-                return DropdownMenuItem<String>(
-                  value: category,
-                  child: Text(category),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedCategory = newValue;
-                });
-              },
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    hint: Text('Seleccione una categoría'),
+                    items: _categories.map((String category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                    ),
+                  ),
                 ),
-                filled: true,
-                fillColor: Colors.grey[200],
-                contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-              ),
+                SizedBox(width: 10),
+                if (_selectedCategory != null)
+                  Icon(
+                    getIconForCategory(_selectedCategory!),
+                    size: 30,
+                    color: Theme.of(context).primaryColor,
+                  ),
+              ],
             ),
             SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 onPressed: _addExpense,
-                child: Text('Añadir Gasto'),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
+                child: Text('Añadir Gasto'),
               ),
             ),
           ],
