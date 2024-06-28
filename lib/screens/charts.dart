@@ -30,7 +30,10 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
   Future<List<PieChartSectionData>> _fetchExpensesByCategoryData() async {
     List<Gasto> expenses = await obtenerGastosDeGrupo(widget.groupId);
     Map<String, double> expensesByCategory = {};
+    double totalAmount = 0;
+
     expenses.forEach((expense) {
+      totalAmount += expense.amount;
       if (expensesByCategory.containsKey(expense.category)) {
         expensesByCategory[expense.category] =
             expensesByCategory[expense.category]! + expense.amount;
@@ -41,29 +44,31 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
 
     List<PieChartSectionData> sections = [];
 
-    // Map categories to PieChartSectionData
     expensesByCategory.entries.forEach((entry) {
       final color = getColorForCategory(entry.key);
       final IconData icon = getIconForCategory(entry.key);
+      final double percentage = entry.value / totalAmount * 100;
 
       sections.add(PieChartSectionData(
         color: color,
         value: entry.value,
         radius: 120,
         title: '',
-        badgeWidget: Container(
-          width: 18,
-          height: 18,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-          ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 22,
-          ),
-        ),
+        badgeWidget: percentage > 5 // Mostrar ícono solo si la porción es mayor al 5%
+            ? Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              )
+            : null,
       ));
     });
 
@@ -84,21 +89,21 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
     return expensesByCategory;
   }
 
-
-
   Future<Map<String, double>> _fetchExpensesByPerson() async {
     List<Gasto> expenses = await obtenerGastosDeGrupo(widget.groupId);
     Map<String, double> expensesByPerson = {};
     expenses.forEach((expense) {
       if (expensesByPerson.containsKey(expense.payerId)) {
-        expensesByPerson[expense.payer] = expensesByPerson[expense.payer]! + expense.amount;
+        expensesByPerson[expense.payer] =
+            expensesByPerson[expense.payer]! + expense.amount;
       } else {
         expensesByPerson[expense.payer] = expense.amount;
       }
     });
     return expensesByPerson;
   }
- @override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -133,7 +138,7 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
               ),
               if (_selectedIndex == 0) ...[
                 Padding(
-                  padding: EdgeInsets.only(top: 2, bottom: 2),
+                  padding: EdgeInsets.only(top: 16, bottom: 24),
                   child: Text(
                     'Gastos por categoría',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -145,7 +150,9 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      return Center(child: Text('Error al cargar los datos: ${snapshot.error}'));
+                      return Center(
+                          child: Text(
+                              'Error al cargar los datos: ${snapshot.error}'));
                     } else {
                       List<PieChartSectionData> sections = snapshot.data ?? [];
                       return Column(
@@ -164,15 +171,22 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
                           FutureBuilder<Map<String, double>>(
                             future: _fetchExpensesByCategory(),
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Center(child: CircularProgressIndicator());
+                              if (snapshot.connectionState == ConnectionState
+                                  .waiting) {
+                                return Center(
+                                    child: CircularProgressIndicator());
                               } else if (snapshot.hasError) {
-                                return Center(child: Text('Error al cargar los datos: ${snapshot.error}'));
+                                return Center(
+                                    child: Text(
+                                        'Error al cargar los datos: ${snapshot.error}'));
                               } else {
-                                Map<String, double> expensesByCategory = snapshot.data ?? {};
+                                Map<String, double> expensesByCategory =
+                                    snapshot.data ?? {};
                                 return Column(
-                                  children: expensesByCategory.entries.map((entry) {
-                                    final color = getColorForCategory(entry.key);
+                                  children:
+                                      expensesByCategory.entries.map((entry) {
+                                    final color =
+                                        getColorForCategory(entry.key);
                                     final icon = getIconForCategory(entry.key);
                                     return ListTile(
                                       leading: Container(
@@ -191,7 +205,8 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
                                         ),
                                       ),
                                       title: Text(entry.key),
-                                      trailing: Text('\$${entry.value.toStringAsFixed(2)}'),
+                                      trailing: Text(
+                                          '\$${entry.value.toStringAsFixed(2)}'),
                                     );
                                   }).toList(),
                                 );
@@ -219,14 +234,19 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
-                        return Center(child: Text('Error al cargar los datos: ${snapshot.error}'));
+                        return Center(
+                            child: Text(
+                                'Error al cargar los datos: ${snapshot.error}'));
                       } else {
-                        Map<String, double> expensesByPerson = snapshot.data ?? {};
+                        Map<String, double> expensesByPerson =
+                            snapshot.data ?? {};
                         return Column(
-                          children: expensesByPerson.entries.map((entry) {
+                          children:
+                              expensesByPerson.entries.map((entry) {
                             final color = getColorForCategory(entry.key);
                             return Padding(
-                              padding: EdgeInsets.symmetric(vertical: 4.0), // Reducción del padding vertical
+                              padding:
+                                  EdgeInsets.symmetric(vertical: 4.0), // Reducción del padding vertical
                               child: Row(
                                 children: [
                                   SizedBox(width: 8),
@@ -234,7 +254,9 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
                                   SizedBox(width: 8),
                                   Expanded(
                                     child: LinearProgressIndicator(
-                                      value: entry.value / expensesByPerson.values.reduce((a, b) => a + b),
+                                      value: entry.value /
+                                          expensesByPerson.values
+                                              .reduce((a, b) => a + b),
                                       color: color,
                                       backgroundColor: color.withOpacity(0.2),
                                     ),
@@ -262,4 +284,6 @@ class _ExpensesChartScreenState extends State<ExpensesChartScreen> {
     final int colorIndex = categoryName.hashCode % colors.length;
     return colors[colorIndex];
   }
+
+
 }

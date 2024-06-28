@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 import 'package:intl/intl.dart'; // Asegúrate de agregar esta dependencia en tu pubspec.yaml
+import 'package:flutter_app_gastos/generals.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final String groupId;
@@ -79,22 +80,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
   }
 
-  IconData getIconForCategory(String categoryName) {
-    switch (categoryName.toLowerCase()) {
-      case 'comida':
-        return Icons.fastfood;
-      case 'transporte':
-        return Icons.directions_car;
-      case 'entretenimiento':
-        return Icons.local_movies;
-      case 'salud':
-        return Icons.favorite;
-      case 'alojamiento':
-        return Icons.hotel;
-      default:
-        return Icons.category;
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {

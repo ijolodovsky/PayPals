@@ -3,22 +3,21 @@ import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
 
 Future<void> marcarGastosComoPagados(String groupId) async {
   try {
-    // Obtener el documento del grupo
-    DocumentReference grupoDocRef = FirebaseFirestore.instance.collection('grupos').doc(groupId);
-    DocumentSnapshot grupoDoc = await grupoDocRef.get();
-
+    // Obtener el documento del grupo y los IDs de gastos en paralelo
+    DocumentSnapshot grupoDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
+    
     if (grupoDoc.exists) {
       List<dynamic> expenseIds = grupoDoc['expenses'];
 
-      // Recorrer cada ID de gasto y actualizar el campo 'paid' a true
+      // Crear una lista de futuros para actualizar cada gasto en paralelo
+      List<Future<void>> updateFutures = [];
       for (String expenseId in expenseIds) {
         DocumentReference expenseDocRef = FirebaseFirestore.instance.collection('expenses').doc(expenseId);
-        DocumentSnapshot expenseDoc = await expenseDocRef.get();
-
-        if (expenseDoc.exists && !expenseDoc['paid']) {
-          await expenseDocRef.update({'paid': true});
-        }
+        updateFutures.add(expenseDocRef.update({'paid': true}));
       }
+
+      // Esperar a que todas las actualizaciones se completen
+      await Future.wait(updateFutures);
     }
   } catch (error) {
     print('Error al marcar los gastos como pagados: $error');
@@ -27,15 +26,21 @@ Future<void> marcarGastosComoPagados(String groupId) async {
 }
 
 Future<Map<String, double>> calcularBalances(String groupId) async {
-  // Obtener los gastos del grupo
-  List<Gasto> gastos = await obtenerGastosDeGrupo(groupId);
+  // Obtener los gastos del grupo y el documento del grupo en paralelo
+  List<Future<dynamic>> futures = [
+    obtenerGastosDeGrupo(groupId),
+    FirebaseFirestore.instance.collection('grupos').doc(groupId).get(),
+  ];
+
+  var results = await Future.wait(futures);
+  List<Gasto> gastos = results[0];
+  DocumentSnapshot groupDoc = results[1];
 
   // Obtener la lista de miembros del grupo
-  DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('grupos').doc(groupId).get();
   List<String> miembros = List<String>.from(groupDoc['members'] ?? []);
 
-  // imprimir miembros por consola
-  print('Miembros del grupo: $miembros'); // Debugging line
+  // Imprimir miembros por consola
+  print('Miembros del grupo: $miembros');
 
   // Map para almacenar los gastos por persona
   Map<String, double> balance = {};
@@ -43,19 +48,13 @@ Future<Map<String, double>> calcularBalances(String groupId) async {
   // Calcular los gastos por persona
   for (Gasto gasto in gastos) {
     if (!gasto.paid) {
-      if (balance.containsKey(gasto.payerId)) {
-        balance[gasto.payerId] = balance[gasto.payerId]! + gasto.amount;
-      } else {
-        balance[gasto.payerId] = gasto.amount;
-      }
+      balance[gasto.payerId] = (balance[gasto.payerId] ?? 0) + gasto.amount;
     }
   }
 
   // Incluir a todos los miembros, incluso si no han gastado nada
   for (String miembro in miembros) {
-    if (!balance.containsKey(miembro)) {
-      balance[miembro] = 0.0;
-    }
+    balance.putIfAbsent(miembro, () => 0.0);
   }
 
   // Calcular el total de gastos y el gasto equitativo por persona
@@ -73,7 +72,7 @@ Future<Map<String, double>> calcularBalances(String groupId) async {
 }
 
 Future<List<Map<String, dynamic>>> ajustarDeudas(String groupId) async {
-  print('Iniciando ajuste de deudas para el grupo $groupId'); // Debugging line
+  print('Iniciando ajuste de deudas para el grupo $groupId');
   Map<String, double> balances = await calcularBalances(groupId);
   List<Map<String, dynamic>> deudas = [];
 
@@ -81,8 +80,8 @@ Future<List<Map<String, dynamic>>> ajustarDeudas(String groupId) async {
   List<MapEntry<String, double>> deudores = balances.entries.where((entry) => entry.value < 0).toList();
   List<MapEntry<String, double>> acreedores = balances.entries.where((entry) => entry.value > 0).toList();
 
-  print('Deudores: $deudores'); // Debugging line
-  print('Acreedores: $acreedores'); // Debugging line
+  print('Deudores: $deudores');
+  print('Acreedores: $acreedores');
 
   int i = 0, j = 0;
 
@@ -112,7 +111,7 @@ Future<List<Map<String, dynamic>>> ajustarDeudas(String groupId) async {
     }
   }
 
-  print('Deudas calculadas: $deudas'); // Debugging line
+  print('Deudas calculadas: $deudas');
   return deudas;
 }
 

@@ -154,7 +154,7 @@ Future<void> _leaveGroup() async {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('No puedes abandonar el grupo'),
-          content: Text('Tienes deudas pendientes en este grupo.'),
+          content: Text('Aún quedan deudas pendientes en el grupo. Ajusta las cuentas antes de salir.'),
           actions: [
             TextButton(
               child: Text('Aceptar'),
@@ -481,7 +481,7 @@ class DebtTile extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Text(
-            '\$$totalUnpaid',
+            NumberFormat.currency(locale: 'es_AR', symbol: '\$').format(totalUnpaid),
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -585,7 +585,7 @@ class ExpenseTile extends StatelessWidget {
           ),
           if (!paid)
             IconButton(
-              icon: Icon(Icons.edit),
+              icon: Icon(Icons.edit, color: Colors.grey[600], size: 16),
               onPressed: onEdit,
             ),
           Column(

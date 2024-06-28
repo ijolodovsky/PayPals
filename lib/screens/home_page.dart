@@ -124,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SizedBox(height: 10),
           Text(
-            '¡Bienvenido, ${widget.userName}!',
+            '¡Bienvenid@, ${widget.userName}!',
             style: TextStyle(fontSize: 24),
           ),
           SizedBox(height: 30),
@@ -176,19 +176,52 @@ class _HomeScreenState extends State<HomeScreen> {
                         final bool isEmpty = userBalance == 0;
 
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: GroupButton(
-                            onPressed: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupId, groupName: groupName)),
-                              );
-                              _reloadData();
-                            },
-                            groupName: groupName,
-                            amount: userBalance.abs(),
-                            isEmpty: isEmpty,
-                            isDebt: isDebt,
+                          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+                          child: Card(
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: InkWell(
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => GroupScreen(groupId: groupId, groupName: groupName)),
+                                );
+                                _reloadData();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.circle,
+                                      color: isDebt ? Colors.red : Colors.green,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          groupName,
+                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                        ),
+                                        if (isEmpty)
+                                          Text(
+                                            'Gastos saldados o balanceados',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          )
+                                        else
+                                          Text(
+                                            isDebt ? 'Debes \$${userBalance.abs().toStringAsFixed(2)}' : 'Te deben \$${userBalance.abs().toStringAsFixed(2)}',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -242,60 +275,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
-}
-
-class GroupButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  final String groupName;
-  final double amount;
-  final bool isEmpty;
-  final bool isDebt;
-
-  GroupButton({
-    required this.onPressed,
-    required this.groupName,
-    required this.amount,
-    required this.isEmpty,
-    required this.isDebt,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.circle,
-            color: isDebt ? Colors.red : Colors.green,
-          ),
-          SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(groupName),
-              if (isEmpty)
-                Text(
-                  'Gastos saldados o balanceados',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                )
-              else
-                Text(
-                  isDebt ? 'Debes \$${amount.toStringAsFixed(2)}' : 'Te deben \$${amount.toStringAsFixed(2)}',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
