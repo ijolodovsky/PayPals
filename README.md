@@ -1,16 +1,15 @@
-# flutter_app_gastos
+# PayPals
 
-A new Flutter project.
+Aplicación para organizar y categorizar gastos con grupos entre distintos usuarios para lograr un balance equitativo.
 
-## Getting Started
+[Video explicativo](https://www.youtube.com/watch?v=OkuiTzeSse4)
 
-This project is a starting point for a Flutter application.
+# Datos de creadores
 
-A few resources to get you started if this is your first Flutter project:
+## Grupo: Los Magos de Oz
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| Padrón | Nombre y Apellido         |Mail |
+|--------|---------------------------|----- |
+| 109043| TOMÁS VAINSTEIN            | tvainstein@fi.uba.ar  |
+| 109385| IARA JOLODOVSKY            | ijolodovsky@fi.uba.ar |
+| 108762| MARTÍN ABRAMOVICH          | mabramovich@fi.uba.ar |
