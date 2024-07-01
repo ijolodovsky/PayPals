@@ -21,7 +21,6 @@ dependencies:
   cloud_firestore: ^4.17.5
   share: ^2.0.4
   intl: ^0.17.0
-  firebase_messaging: ^14.9.4
   pie_chart: ^5.4.0
   fl_chart: ^0.68.0
 

@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/services/FirestoreService.dart';
 import 'package:flutter_app_gastos/user_auth/firebase_user_authentication/fire_auth_services.dart';
 
 FirebaseFirestore _firestore = FirebaseFirestore.instance;
-FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
 class Gasto {
   final String id;
@@ -52,38 +50,6 @@ Future<String> cargarGastoEnGrupo(String groupId, String description, double amo
   } catch (error) {
     print('Error al cargar el gasto en el grupo: $error');
     rethrow;
-  }
-}
-
-Future<void> notificarNuevoGasto(String groupId, String description, double amount) async {
-  DocumentSnapshot grupoDoc = await _firestore.collection('grupos').doc(groupId).get();
-  List<String> miembros = List<String>.from(grupoDoc['members']);
-
-  List<Future<void>> notificaciones = [];
-  for (String miembroId in miembros) {
-    notificaciones.add(FirebaseFirestore.instance.collection('users').doc(miembroId).get().then((userDoc) {
-      String? fcmToken = userDoc['fcmToken'];
-      if (fcmToken != null) {
-        return _sendPushNotification(fcmToken, description, amount);
-      }
-      return Future.value();
-    }));
-  }
-  await Future.wait(notificaciones);
-}
-
-Future<void> _sendPushNotification(String fcmToken, String description, double amount) async {
-  try {
-    await _firebaseMessaging.sendMessage(
-      to: fcmToken,
-      data: {
-        'title': 'Nuevo gasto',
-        'body': 'Se ha agregado un nuevo gasto de $amount€: $description',
-      },
-    );
-    print('Notificación enviada exitosamente');
-  } catch (e) {
-    print('Error al enviar la notificación: $e');
   }
 }
 

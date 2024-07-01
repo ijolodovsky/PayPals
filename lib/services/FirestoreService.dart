@@ -49,7 +49,6 @@ Future<void> removeUserFromGroup(String groupId, String userId) async {
             await groupDocRef.update({'members': miembros});
           }
         } else {
-          // Handle the case where 'members' field does not exist
           print('El campo "members" no existe en el documento del grupo.');
         }
       } else {
@@ -75,7 +74,6 @@ Future<void> removeUserFromGroup(String groupId, String userId) async {
             await userDocRef.update({'grupos': grupos});
           }
         } else {
-          // Handle the case where 'grupos' field does not exist
           print('El campo "grupos" no existe en el documento del usuario.');
         }
       } else {

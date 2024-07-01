@@ -106,8 +106,8 @@ class _AddGroupPageState extends State<AddGroupPage> {
                     builder: (context, Color? color, child) {
                       return ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: color, // Color del botón
-                          minimumSize: Size(200, 50), // Tamaño del botón
+                          backgroundColor: color,
+                          minimumSize: Size(200, 50),
                         ),
                         onPressed: isLoading ? null : createGroup,
                         child: child,

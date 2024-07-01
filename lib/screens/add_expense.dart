@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_gastos/services/addExpensePageLogic.dart';
-import 'package:intl/intl.dart'; // Asegúrate de agregar esta dependencia en tu pubspec.yaml
+import 'package:intl/intl.dart';
 import 'package:flutter_app_gastos/generals.dart';
 
 class AddExpenseScreen extends StatefulWidget {
@@ -71,7 +71,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime.now(), // Establece la fecha actual como la última fecha seleccionable
+      lastDate: DateTime.now(),
     );
     if (pickedDate != null && pickedDate != _selectedDate) {
       setState(() {
